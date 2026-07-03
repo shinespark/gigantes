@@ -2,7 +2,7 @@ import Foundation
 import Network
 import dnssd
 
-struct DiscoveredBridge: Identifiable, Equatable, Sendable {
+struct DiscoveredBridge: Identifiable, Hashable, Sendable {
     /// Bridge ID(小文字)。TLS の CN 照合と Keychain のアカウント名に使う
     let id: String
     let ip: String

@@ -34,6 +34,19 @@ struct CIEXYColor: Codable, Equatable, Sendable {
     }
 }
 
+/// 設定画面の ColorPicker と相互変換しやすい sRGB 表現(各成分 0–1)。
+struct RGBColor: Codable, Equatable, Sendable {
+    var red: Double
+    var green: Double
+    var blue: Double
+
+    static let red = RGBColor(red: 1, green: 0, blue: 0)
+
+    var xy: CIEXYColor {
+        CIEXYColor(red: red, green: green, blue: blue)
+    }
+}
+
 // MARK: - CLIP v2 リソース
 
 /// CLIP v2 のレスポンス共通形式 `{"errors": [...], "data": [...]}`。

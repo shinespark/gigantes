@@ -28,13 +28,13 @@ enum AppPhase: Equatable {
     }
 }
 
-/// UserDefaults に永続化するユーザー設定。
+/// UserDefaults に永続化するユーザー設定(秘密情報は含まない)。
 struct AppConfig: Codable, Equatable {
     var bridgeIP: String?
     var bridgeID: String?
     var lightID: String?
     var lightName: String?
-    var onAirColor: CIEXYColor = .red
+    var onAirColor: RGBColor = .red
     var onAirBrightness: Double = 100
 
     var isComplete: Bool {
@@ -69,14 +69,50 @@ final class AppState {
         }
     }
 
+    let secrets: any SecretStoring = KeychainStore()
+    private let detector = CameraDetector()
+    private let snapshots = UserDefaultsSnapshotStore()
+    private var coordinatorTask: Task<Void, Never>?
+
     init() {
         config = AppConfig.load()
         restartCoordinator()
     }
 
+    /// 設定済みの Bridge に対する API クライアント。未設定・未ペアリングなら nil。
+    var hueClient: HueClient? {
+        guard let bridgeIP = config.bridgeIP,
+              let bridgeID = config.bridgeID,
+              let key = secrets.applicationKey(for: bridgeID) else {
+            return nil
+        }
+        return HueClient(bridgeIP: bridgeIP, bridgeID: bridgeID, applicationKey: key)
+    }
+
     /// 設定が揃っていれば監視を開始し、揃っていなければ停止する。
-    /// 実際の Coordinator 結線は Phase 5 で実装する。
     private func restartCoordinator() {
-        phase = config.isComplete ? .idle : .unconfigured
+        coordinatorTask?.cancel()
+        coordinatorTask = nil
+
+        guard let lightID = config.lightID, let hue = hueClient else {
+            phase = .unconfigured
+            return
+        }
+        phase = .idle
+
+        let coordinator = MeetingCoordinator(
+            detector: detector,
+            hue: hue,
+            snapshots: snapshots,
+            configuration: .init(
+                lightID: lightID,
+                onAirColor: config.onAirColor.xy,
+                onAirBrightness: config.onAirBrightness
+            ),
+            onPhaseChange: { [weak self] phase in
+                Task { @MainActor in self?.phase = phase }
+            }
+        )
+        coordinatorTask = Task { await coordinator.run() }
     }
 }
