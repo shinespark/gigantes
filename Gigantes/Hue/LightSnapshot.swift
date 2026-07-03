@@ -21,17 +21,22 @@ protocol SnapshotStoring: Sendable {
 
 struct UserDefaultsSnapshotStore: SnapshotStoring {
     private static let key = "lightSnapshot"
+    private let defaults: UserDefaults
+
+    init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
+    }
 
     func load() -> LightSnapshot? {
-        guard let data = UserDefaults.standard.data(forKey: Self.key) else { return nil }
+        guard let data = defaults.data(forKey: Self.key) else { return nil }
         return try? JSONDecoder().decode(LightSnapshot.self, from: data)
     }
 
     func save(_ snapshot: LightSnapshot) {
-        UserDefaults.standard.set(try? JSONEncoder().encode(snapshot), forKey: Self.key)
+        defaults.set(try? JSONEncoder().encode(snapshot), forKey: Self.key)
     }
 
     func clear() {
-        UserDefaults.standard.removeObject(forKey: Self.key)
+        defaults.removeObject(forKey: Self.key)
     }
 }
