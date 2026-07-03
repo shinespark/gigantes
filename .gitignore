@@ -1,0 +1,12 @@
+# XcodeGen が生成するプロジェクト
+*.xcodeproj
+
+# ビルド成果物
+build/
+DerivedData/
+
+# macOS
+.DS_Store
+
+# Xcode ユーザー設定
+xcuserdata/
