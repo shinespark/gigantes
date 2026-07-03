@@ -1,0 +1,49 @@
+name: Gigantes
+options:
+  bundleIdPrefix: dev.shinespark
+  deploymentTarget:
+    macOS: "14.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "5.10"
+    MARKETING_VERSION: 0.1.0
+    CURRENT_PROJECT_VERSION: 1
+    CODE_SIGN_IDENTITY: "-"
+targets:
+  Gigantes:
+    type: application
+    platform: macOS
+    sources:
+      - Gigantes
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.shinespark.gigantes
+        GENERATE_INFOPLIST_FILE: NO
+        INFOPLIST_FILE: Gigantes/Info.plist
+        CODE_SIGN_ENTITLEMENTS: Gigantes/Gigantes.entitlements
+        ENABLE_HARDENED_RUNTIME: YES
+  GigantesTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - GigantesTests
+    dependencies:
+      - target: Gigantes
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.shinespark.gigantes-tests
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_HOST: $(BUILT_PRODUCTS_DIR)/Gigantes.app/Contents/MacOS/Gigantes
+        BUNDLE_LOADER: $(TEST_HOST)
+schemes:
+  Gigantes:
+    build:
+      targets:
+        Gigantes: all
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - GigantesTests
