@@ -234,6 +234,7 @@ private struct LightSection: View {
         guard let client = appState.hueClient else { return }
         do {
             lights = try await client.listLights()
+                .sorted { $0.displayName.localizedStandardCompare($1.displayName) == .orderedAscending }
             loadError = nil
         } catch {
             loadError = error.localizedDescription
