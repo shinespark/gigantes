@@ -16,7 +16,10 @@ struct SettingsView: View {
         }
         .formStyle(.grouped)
         .frame(width: 480)
-        .frame(minHeight: 460)
+        // grouped Form は List ベースで内容にフィットしないため、
+        // 全セクションがスクロールなしで収まる高さを状態ごとに与える。
+        // 見積もりが外れてもエラー行等に到達できるようスクロール自体は殺さない
+        .frame(height: isSetUp ? 580 : 700)
     }
 
     private var isSetUp: Bool {
