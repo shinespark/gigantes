@@ -6,13 +6,13 @@ struct SettingsView: View {
 
     var body: some View {
         Form {
+            GeneralSection()
             if !isSetUp {
                 SetupProgressSection()
             }
             BridgeSection()
             LightSection()
             OnAirSection()
-            GeneralSection()
         }
         .formStyle(.grouped)
         .frame(width: 480)
