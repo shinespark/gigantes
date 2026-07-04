@@ -17,6 +17,8 @@ struct GigantesApp: App {
             SettingsView()
                 .environment(appState)
         }
+        // ウィンドウの高さを常に設定画面の内容にぴったり合わせる(手動リサイズ不可)
+        .windowResizability(.contentSize)
     }
 }
 
