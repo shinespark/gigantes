@@ -5,9 +5,7 @@ struct SettingsView: View {
     @Environment(AppState.self) private var appState
 
     var body: some View {
-        // grouped スタイルの Form は List ベースで内容の高さにフィットせず
-        // スクロールが発生するため、GroupBox の縦積みで内容にフィットさせる
-        VStack(alignment: .leading, spacing: 14) {
+        Form {
             GeneralSection()
             if !isSetUp {
                 SetupProgressSection()
@@ -16,39 +14,13 @@ struct SettingsView: View {
             LightSection()
             OnAirSection()
         }
-        .padding(20)
+        .formStyle(.grouped)
         .frame(width: 480)
-        .fixedSize(horizontal: false, vertical: true)
+        .frame(minHeight: 460)
     }
 
     private var isSetUp: Bool {
         appState.config.isComplete && appState.hueClient != nil
-    }
-}
-
-/// grouped Form 風の見た目を保ちつつ、内容の高さにフィットするセクション。
-private struct SettingsSection<Content: View>: View {
-    let title: LocalizedStringKey
-    @ViewBuilder var content: Content
-
-    init(_ title: LocalizedStringKey, @ViewBuilder content: () -> Content) {
-        self.title = title
-        self.content = content()
-    }
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(title)
-                .font(.headline)
-                .foregroundStyle(.secondary)
-            GroupBox {
-                VStack(alignment: .leading, spacing: 10) {
-                    content
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(6)
-            }
-        }
     }
 }
 
@@ -58,7 +30,7 @@ private struct SetupProgressSection: View {
     @Environment(AppState.self) private var appState
 
     var body: some View {
-        SettingsSection("Setup") {
+        Section("Setup") {
             stepRow(1, "Pair with your Hue Bridge", done: appState.hueClient != nil)
             stepRow(2, "Choose the ON AIR light", done: appState.config.lightID != nil)
             stepRow(3, "Pick a color and test it", done: false)
@@ -82,7 +54,7 @@ private struct GeneralSection: View {
     @State private var launchAtLoginError: String?
 
     var body: some View {
-        SettingsSection("General") {
+        Section("General") {
             Toggle("Launch at login", isOn: $launchAtLogin)
                 .onChange(of: launchAtLogin) { _, enabled in
                     do {
@@ -120,7 +92,7 @@ private struct BridgeSection: View {
     @State private var pairingTask: Task<Void, Never>?
 
     var body: some View {
-        SettingsSection("Hue Bridge") {
+        Section("Hue Bridge") {
             if let bridgeIP = appState.config.bridgeIP {
                 LabeledContent("Bridge", value: bridgeIP)
                 LabeledContent("Status") {
@@ -227,7 +199,7 @@ private struct LightSection: View {
     @State private var loadError: String?
 
     var body: some View {
-        SettingsSection("Light") {
+        Section("Light") {
             if appState.hueClient == nil {
                 Text("Pair with a Hue Bridge first.").foregroundStyle(.secondary)
             } else {
@@ -278,7 +250,7 @@ private struct OnAirSection: View {
     @State private var testing = false
 
     var body: some View {
-        SettingsSection("ON AIR") {
+        Section("ON AIR") {
             ColorPicker("Color", selection: colorSelection, supportsOpacity: false)
 
             LabeledContent("Brightness") {
