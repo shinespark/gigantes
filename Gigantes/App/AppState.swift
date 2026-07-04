@@ -89,6 +89,11 @@ final class AppState {
         return HueClient(bridgeIP: bridgeIP, bridgeID: bridgeID, applicationKey: key)
     }
 
+    /// エラー時にメニューバーから手動で再接続する。
+    func retry() {
+        restartCoordinator()
+    }
+
     /// 設定が揃っていれば監視を開始し、揃っていなければ停止する。
     private func restartCoordinator() {
         coordinatorTask?.cancel()

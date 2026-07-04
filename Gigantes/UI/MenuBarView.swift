@@ -7,6 +7,12 @@ struct MenuBarView: View {
     var body: some View {
         Text(appState.phase.label)
 
+        if case .error = appState.phase {
+            Button("Reconnect") {
+                appState.retry()
+            }
+        }
+
         Divider()
 
         Button(appState.phase == .unconfigured ? "Set Up…" : "Settings…") {
