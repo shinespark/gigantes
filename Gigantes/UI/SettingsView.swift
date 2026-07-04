@@ -84,6 +84,8 @@ private struct GeneralSection: View {
     var body: some View {
         SettingsSection("General") {
             Toggle("Launch at login", isOn: $launchAtLogin)
+                // Form の外(GroupBox 内)ではチェックボックス描画になるため、スイッチを明示する
+                .toggleStyle(.switch)
                 .onChange(of: launchAtLogin) { _, enabled in
                     do {
                         if enabled {
