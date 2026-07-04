@@ -9,7 +9,8 @@ Turn a Philips Hue lamp into an **ON AIR sign**. gigantes is a macOS menu bar ap
 - Restores the lamp to its pre-meeting state (on/off, color, brightness) when the camera turns off
 - Debounces short camera flaps (e.g. Zoom's preview window) so the lamp doesn't flicker
 - Recovers after a crash or restart: a leftover snapshot is restored on launch (unless a meeting is still in progress)
-- Menu bar icon shows the current state: standby / ON AIR / error
+- Menu bar icon shows the current state: standby / ON AIR / error, with one-click reconnect on errors
+- Optional launch at login
 
 ## Requirements
 

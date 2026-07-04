@@ -1,3 +1,4 @@
+import ServiceManagement
 import SwiftUI
 
 struct SettingsView: View {
@@ -5,13 +6,73 @@ struct SettingsView: View {
 
     var body: some View {
         Form {
+            if !isSetUp {
+                SetupProgressSection()
+            }
             BridgeSection()
             LightSection()
             OnAirSection()
+            GeneralSection()
         }
         .formStyle(.grouped)
         .frame(width: 480)
-        .frame(minHeight: 420)
+        .frame(minHeight: 460)
+    }
+
+    private var isSetUp: Bool {
+        appState.config.isComplete && appState.hueClient != nil
+    }
+}
+
+// MARK: - オンボーディング(セットアップ進捗)
+
+private struct SetupProgressSection: View {
+    @Environment(AppState.self) private var appState
+
+    var body: some View {
+        Section("Setup") {
+            stepRow(1, "Pair with your Hue Bridge", done: appState.hueClient != nil)
+            stepRow(2, "Choose the ON AIR light", done: appState.config.lightID != nil)
+            stepRow(3, "Pick a color and test it", done: false)
+        }
+    }
+
+    private func stepRow(_ number: Int, _ title: LocalizedStringKey, done: Bool) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: done ? "checkmark.circle.fill" : "\(number).circle")
+                .foregroundStyle(done ? .green : .secondary)
+            Text(title)
+                .foregroundStyle(done ? .secondary : .primary)
+        }
+    }
+}
+
+// MARK: - 一般設定
+
+private struct GeneralSection: View {
+    @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
+    @State private var launchAtLoginError: String?
+
+    var body: some View {
+        Section("General") {
+            Toggle("Launch at login", isOn: $launchAtLogin)
+                .onChange(of: launchAtLogin) { _, enabled in
+                    do {
+                        if enabled {
+                            try SMAppService.mainApp.register()
+                        } else {
+                            try SMAppService.mainApp.unregister()
+                        }
+                        launchAtLoginError = nil
+                    } catch {
+                        launchAtLoginError = error.localizedDescription
+                        launchAtLogin = SMAppService.mainApp.status == .enabled
+                    }
+                }
+            if let launchAtLoginError {
+                Text(launchAtLoginError).foregroundStyle(.red)
+            }
+        }
     }
 }
 
@@ -173,6 +234,7 @@ private struct LightSection: View {
         guard let client = appState.hueClient else { return }
         do {
             lights = try await client.listLights()
+                .sorted { $0.displayName.localizedStandardCompare($1.displayName) == .orderedAscending }
             loadError = nil
         } catch {
             loadError = error.localizedDescription
