@@ -17,6 +17,10 @@ Turn a Philips Hue lamp into an **ON AIR sign**. gigantes is a macOS menu bar ap
 - macOS 14 (Sonoma) or later
 - A Philips Hue Bridge (v2, square shape) on the same local network, with up-to-date firmware
 
+## Install
+
+Download the latest `Gigantes-<version>.zip` from [Releases](https://github.com/shinespark/gigantes/releases), unzip it, and move `Gigantes.app` to your Applications folder. Release builds are signed with a Developer ID and notarized by Apple, so they launch without any Gatekeeper workarounds.
+
 ## Setup
 
 1. Launch gigantes — it appears in the menu bar
@@ -26,8 +30,6 @@ Turn a Philips Hue lamp into an **ON AIR sign**. gigantes is a macOS menu bar ap
 5. Pick the ON AIR color and brightness, and use **Test Light** to verify
 
 On macOS 15 and later, allow **Local Network** access when prompted; the app cannot reach the bridge without it.
-
-> **Note (unsigned builds):** if you downloaded an unsigned build, macOS will block the first launch. Right-click the app → **Open** → **Open** to run it.
 
 ## Privacy
 
