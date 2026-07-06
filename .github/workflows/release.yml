@@ -1,0 +1,85 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+env:
+  APP: build/Build/Products/Release/Gigantes.app
+
+jobs:
+  release:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Build (Release)
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          xcodegen
+          xcodebuild -project Gigantes.xcodeproj -scheme Gigantes \
+            -configuration Release -derivedDataPath build \
+            MARKETING_VERSION="$VERSION" build
+
+      # ---- 署名と notarization(Secrets が設定されている場合のみ)----
+      # 必要な Secrets は docs/release.md を参照
+
+      - name: Import Developer ID certificate
+        if: ${{ secrets.MACOS_CERTIFICATE != '' }}
+        env:
+          MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+          MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
+        run: |
+          KEYCHAIN_PWD="$(uuidgen)"
+          security create-keychain -p "$KEYCHAIN_PWD" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "$KEYCHAIN_PWD" build.keychain
+          echo "$MACOS_CERTIFICATE" | base64 --decode > certificate.p12
+          security import certificate.p12 -k build.keychain \
+            -P "$MACOS_CERTIFICATE_PWD" -T /usr/bin/codesign
+          rm certificate.p12
+          security set-key-partition-list -S apple-tool:,apple: \
+            -s -k "$KEYCHAIN_PWD" build.keychain
+
+      - name: Sign with Developer ID
+        if: ${{ secrets.MACOS_CERTIFICATE != '' }}
+        run: |
+          codesign --force --options runtime --timestamp \
+            --entitlements Gigantes/Gigantes.entitlements \
+            --sign "Developer ID Application" "$APP"
+          codesign --verify --deep --strict "$APP"
+
+      - name: Notarize and staple
+        if: ${{ secrets.APPLE_ID != '' }}
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+        run: |
+          ditto -c -k --keepParent "$APP" notarize.zip
+          xcrun notarytool submit notarize.zip --wait \
+            --apple-id "$APPLE_ID" \
+            --team-id "$APPLE_TEAM_ID" \
+            --password "$APPLE_APP_SPECIFIC_PASSWORD"
+          xcrun stapler staple "$APP"
+          rm notarize.zip
+
+      # ---- パッケージングと GitHub Release ----
+
+      - name: Package
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          ditto -c -k --keepParent "$APP" "Gigantes-$VERSION.zip"
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" Gigantes-*.zip \
+            --title "$GITHUB_REF_NAME" --generate-notes
