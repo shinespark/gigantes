@@ -15,6 +15,8 @@ struct MeetingStateMachine {
         case rawActivityChanged(Bool)
         /// スケジュールしたデバウンスタイマーの発火
         case debounceFired(token: Int)
+        /// メニューバーからの手動オーバーライド(強制 ON AIR)の ON/OFF
+        case manualOverrideChanged(Bool)
     }
 
     enum Effect: Equatable {
@@ -33,6 +35,8 @@ struct MeetingStateMachine {
     static let idleDebounce: Duration = .seconds(3)
 
     private(set) var state: State
+    private(set) var manualOverride = false
+    private var lastRawActivity = false
     private var pendingTarget: State?
     private var pendingToken = 0
 
@@ -43,6 +47,11 @@ struct MeetingStateMachine {
     mutating func handle(_ event: Event) -> [Effect] {
         switch event {
         case .rawActivityChanged(let active):
+            lastRawActivity = active
+
+            // オーバーライド中はカメラ状態を記録するだけで自動遷移しない
+            guard !manualOverride else { return [] }
+
             let target: State = active ? .onAir : .idle
 
             if target == state {
@@ -65,6 +74,26 @@ struct MeetingStateMachine {
             // 取り消し済み・古いタイマーの発火は無視する
             guard token == pendingToken, let target = pendingTarget else { return [] }
             pendingTarget = nil
+            state = target
+            return target == .onAir ? [.captureSnapshotThenSetOnAir] : [.restoreSnapshot]
+
+        case .manualOverrideChanged(let enabled):
+            guard enabled != manualOverride else { return [] }
+            manualOverride = enabled
+
+            // 手動操作なのでデバウンスせず即時に遷移する
+            if enabled {
+                pendingTarget = nil
+                if state == .idle {
+                    state = .onAir
+                    return [.cancelDebounce, .captureSnapshotThenSetOnAir]
+                }
+                return [.cancelDebounce]
+            }
+
+            // 解除: 実際のカメラ状態に合わせる
+            let target: State = lastRawActivity ? .onAir : .idle
+            guard target != state else { return [] }
             state = target
             return target == .onAir ? [.captureSnapshotThenSetOnAir] : [.restoreSnapshot]
         }

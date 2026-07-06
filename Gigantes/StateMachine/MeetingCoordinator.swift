@@ -59,6 +59,8 @@ actor MeetingCoordinator {
             if initiallyActive {
                 Self.logger.info("Leftover snapshot found while camera is active; resuming onAir")
                 machine = MeetingStateMachine(initialState: .onAir)
+                // オーバーライド解除時の判断に使う lastRawActivity を記録させる(遷移は起きない)
+                _ = machine.handle(.rawActivityChanged(true))
                 onPhaseChange(.onAir)
                 return
             }
@@ -68,6 +70,11 @@ actor MeetingCoordinator {
         if initiallyActive {
             await handle(.rawActivityChanged(true))
         }
+    }
+
+    /// メニューバーからの強制 ON AIR / 解除。
+    func setManualOverride(_ enabled: Bool) async {
+        await handle(.manualOverrideChanged(enabled))
     }
 
     private func handle(_ event: MeetingStateMachine.Event) async {

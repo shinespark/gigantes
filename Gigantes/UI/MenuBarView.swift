@@ -13,6 +13,13 @@ struct MenuBarView: View {
             }
         }
 
+        if appState.phase != .unconfigured {
+            Toggle("Force ON AIR", isOn: Binding(
+                get: { appState.manualOverride },
+                set: { appState.setManualOverride($0) }
+            ))
+        }
+
         Divider()
 
         Button(appState.phase == .unconfigured ? "Set Up…" : "Settings…") {
