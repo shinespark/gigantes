@@ -50,11 +50,22 @@ private struct SetupProgressSection: View {
 // MARK: - 一般設定
 
 private struct GeneralSection: View {
+    @Environment(AppState.self) private var appState
     @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
     @State private var launchAtLoginError: String?
 
     var body: some View {
         Section("General") {
+            LabeledContent("Force ON AIR shortcut") {
+                ShortcutRecorderView(
+                    shortcut: hotkeyBinding,
+                    onRecordingChanged: { appState.setHotkeyRecording($0) }
+                )
+            }
+            if let hotkeyError = appState.hotkeyError {
+                Text(hotkeyError).foregroundStyle(.red)
+            }
+
             Toggle("Launch at login", isOn: $launchAtLogin)
                 .onChange(of: launchAtLogin) { _, enabled in
                     do {
@@ -73,6 +84,13 @@ private struct GeneralSection: View {
                 Text(launchAtLoginError).foregroundStyle(.red)
             }
         }
+    }
+
+    private var hotkeyBinding: Binding<HotkeyShortcut?> {
+        Binding(
+            get: { appState.config.hotkey },
+            set: { appState.config.hotkey = $0 }
+        )
     }
 }
 
