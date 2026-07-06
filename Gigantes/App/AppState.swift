@@ -69,9 +69,13 @@ final class AppState {
         }
     }
 
+    /// 強制 ON AIR の UI 表示状態(実際の遷移は coordinator 側の状態機械が判断する)
+    private(set) var manualOverride = false
+
     let secrets: any SecretStoring = KeychainStore()
     private let detector = CameraDetector()
     private let snapshots = UserDefaultsSnapshotStore()
+    private var coordinator: MeetingCoordinator?
     private var coordinatorTask: Task<Void, Never>?
 
     init() {
@@ -94,10 +98,19 @@ final class AppState {
         restartCoordinator()
     }
 
+    /// メニューバーからの強制 ON AIR / 解除。
+    func setManualOverride(_ enabled: Bool) {
+        guard let coordinator else { return }
+        manualOverride = enabled
+        Task { await coordinator.setManualOverride(enabled) }
+    }
+
     /// 設定が揃っていれば監視を開始し、揃っていなければ停止する。
     private func restartCoordinator() {
         coordinatorTask?.cancel()
         coordinatorTask = nil
+        coordinator = nil
+        manualOverride = false
 
         guard let lightID = config.lightID, let hue = hueClient else {
             phase = .unconfigured
@@ -118,6 +131,7 @@ final class AppState {
                 Task { @MainActor in self?.phase = phase }
             }
         )
+        self.coordinator = coordinator
         coordinatorTask = Task { await coordinator.run() }
     }
 }
