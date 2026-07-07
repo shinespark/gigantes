@@ -49,7 +49,7 @@ struct AppConfig: Codable, Equatable {
     var onAirSceneID: String?
     /// "シーン名 – 部屋名" の表示用キャッシュ(再取得なしで表示するため)
     var onAirSceneName: String?
-    /// Force ON AIR のグローバルショートカット。nil = 明示的に解除された状態
+    /// Now ON AIR のグローバルショートカット。nil = 明示的に解除された状態
     var hotkey: HotkeyShortcut? = .default
 
     var isComplete: Bool {
