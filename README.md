@@ -19,7 +19,7 @@ During remote meetings and the like, it lets your family know "please don't come
 
 ## Install
 
-Download the latest `Huemdal-<version>.zip` from [Releases](https://github.com/shinespark/huemdal/releases), unzip it, and move `Huemdal.app` to your Applications folder. Release builds are signed with a Developer ID and notarized by Apple, so they launch without any Gatekeeper workarounds.
+Download the latest `Huemdal-<version>.zip` from [Releases](https://github.com/shinespark/huemdal/releases), unzip it, and move `Huemdal.app` to your Applications folder.
 
 ## Setup
 
