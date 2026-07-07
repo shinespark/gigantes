@@ -38,8 +38,8 @@ final class HotkeyShortcutTests: XCTestCase {
         XCTAssertEqual(shortcut.displayString, "⌃⌥⇧⌘O")
     }
 
-    func testDefaultShortcutIsCommandShiftG() {
-        XCTAssertEqual(HotkeyShortcut.default.displayString, "⇧⌘G")
+    func testDefaultShortcutIsCommandShiftH() {
+        XCTAssertEqual(HotkeyShortcut.default.displayString, "⇧⌘H")
         XCTAssertTrue(HotkeyShortcut.default.hasRequiredModifier)
     }
 

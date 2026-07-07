@@ -11,11 +11,11 @@ struct HotkeyShortcut: Codable, Equatable {
     var carbonModifiers: UInt32
     var keyLabel: String
 
-    /// デフォルトは ⌘⇧G
+    /// デフォルトは ⌘⇧H
     static let `default` = HotkeyShortcut(
-        keyCode: UInt16(kVK_ANSI_G),
+        keyCode: UInt16(kVK_ANSI_H),
         carbonModifiers: UInt32(cmdKey | shiftKey),
-        keyLabel: "G"
+        keyLabel: "H"
     )
 
     /// macOS 標準の表記順(⌃⌥⇧⌘)で表示する。
