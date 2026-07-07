@@ -9,12 +9,12 @@ struct SettingsView: View {
             if !isSetUp {
                 SetupProgressSection()
             }
+            GeneralSection()
             BridgeSection()
             if appState.config.onAirMode == .color {
                 LightSection()
             }
             OnAirSection()
-            GeneralSection()
         }
         .formStyle(.grouped)
         .frame(width: 480)
@@ -62,16 +62,6 @@ private struct GeneralSection: View {
 
     var body: some View {
         Section("General") {
-            LabeledContent("Force ON AIR shortcut") {
-                ShortcutRecorderView(
-                    shortcut: hotkeyBinding,
-                    onRecordingChanged: { appState.setHotkeyRecording($0) }
-                )
-            }
-            if let hotkeyError = appState.hotkeyError {
-                Text(hotkeyError).foregroundStyle(.red)
-            }
-
             Toggle("Launch at login", isOn: $launchAtLogin)
                 .onChange(of: launchAtLogin) { _, enabled in
                     do {
@@ -88,6 +78,16 @@ private struct GeneralSection: View {
                 }
             if let launchAtLoginError {
                 Text(launchAtLoginError).foregroundStyle(.red)
+            }
+
+            LabeledContent("Force ON AIR shortcut") {
+                ShortcutRecorderView(
+                    shortcut: hotkeyBinding,
+                    onRecordingChanged: { appState.setHotkeyRecording($0) }
+                )
+            }
+            if let hotkeyError = appState.hotkeyError {
+                Text(hotkeyError).foregroundStyle(.red)
             }
         }
     }
