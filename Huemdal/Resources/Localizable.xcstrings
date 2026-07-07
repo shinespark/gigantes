@@ -1,0 +1,318 @@
+{
+  "sourceLanguage" : "en",
+  "version" : "1.0",
+  "strings" : {
+    "Setup" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "セットアップ" } }
+      }
+    },
+    "Pair with your Hue Bridge" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "Hue Bridge とペアリングする" } }
+      }
+    },
+    "Choose the ON AIR scene" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "ON AIR にするシーンを選ぶ" } }
+      }
+    },
+    "Choose the ON AIR lights" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "ON AIR にするライトを選ぶ" } }
+      }
+    },
+    "Pick a color and test it" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "色を選んでテストする" } }
+      }
+    },
+    "General" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "一般" } }
+      }
+    },
+    "Language" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "言語" } }
+      }
+    },
+    "System Default" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "システムのデフォルト" } }
+      }
+    },
+    "Launch at login" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "ログイン時に起動" } }
+      }
+    },
+    "Hue Bridge" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "Hue Bridge" } }
+      }
+    },
+    "Bridge" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "ブリッジ" } }
+      }
+    },
+    "Status" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "ステータス" } }
+      }
+    },
+    "Paired" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "ペアリング済み" } }
+      }
+    },
+    "Not paired" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "未ペアリング" } }
+      }
+    },
+    "Search for Bridge…" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "ブリッジを検索…" } }
+      }
+    },
+    "Search Again…" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "再検索…" } }
+      }
+    },
+    "Searching for Hue Bridge…" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "Hue Bridge を検索中…" } }
+      }
+    },
+    "Press the link button on your Hue Bridge" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "Hue Bridge のリンクボタンを押してください" } }
+      }
+    },
+    "Cancel" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "キャンセル" } }
+      }
+    },
+    "Try Again…" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "再試行…" } }
+      }
+    },
+    "Found bridges" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "見つかったブリッジ" } }
+      }
+    },
+    "No Hue Bridge found on the local network." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "ローカルネットワークに Hue Bridge が見つかりませんでした。" } }
+      }
+    },
+    "Link button was not pressed in time." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "時間内にリンクボタンが押されませんでした。" } }
+      }
+    },
+    "Lights" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "ライト" } }
+      }
+    },
+    "Pair with a Hue Bridge first." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "先に Hue Bridge とペアリングしてください。" } }
+      }
+    },
+    "All lights" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "すべて" } }
+      }
+    },
+    "Every light on the bridge will be used, including lights added later." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "ブリッジ上のすべてのライトが対象になります(後から追加したライトも含みます)。" } }
+      }
+    },
+    "Reload Lights" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "ライトを再読み込み" } }
+      }
+    },
+    "ON AIR" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "ON AIR" } }
+      }
+    },
+    "Mode" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "モード" } }
+      }
+    },
+    "Color" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "カラー" } }
+      }
+    },
+    "Scene" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "シーン" } }
+      }
+    },
+    "None" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "なし" } }
+      }
+    },
+    "Brightness" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "明るさ" } }
+      }
+    },
+    "The selected scene was not found on the bridge. It may have been deleted." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "選択したシーンがブリッジ上に見つかりません。削除された可能性があります。" } }
+      }
+    },
+    "Reload Scenes" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "シーンを再読み込み" } }
+      }
+    },
+    "Test" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "テスト" } }
+      }
+    },
+    "Test succeeded." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "テストに成功しました。" } }
+      }
+    },
+    "Reconnect" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "再接続" } }
+      }
+    },
+    "Now ON AIR" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "いますぐ ON AIR" } }
+      }
+    },
+    "Set Up…" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "セットアップ…" } }
+      }
+    },
+    "Settings…" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "設定…" } }
+      }
+    },
+    "Quit Huemdal" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "Huemdal を終了" } }
+      }
+    },
+    "Type shortcut… (⎋ to cancel)" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "ショートカットを入力…(⎋ でキャンセル)" } }
+      }
+    },
+    "Record Shortcut…" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "ショートカットを記録…" } }
+      }
+    },
+    "Remove shortcut" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "ショートカットを削除" } }
+      }
+    },
+    "Include ⌘ or ⌃ in the shortcut." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "ショートカットには ⌘ か ⌃ を含めてください。" } }
+      }
+    },
+    "Not configured" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "未設定" } }
+      }
+    },
+    "Standby" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "Standby" } }
+      }
+    },
+    "Could not register the shortcut. It may be in use by the system." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "ショートカットを登録できませんでした。システムで使用中の可能性があります。" } }
+      }
+    },
+    "Local network access is denied. Allow Huemdal in System Settings > Privacy & Security > Local Network." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "ローカルネットワークへのアクセスが拒否されています。「システム設定 > プライバシーとセキュリティ > ローカルネットワーク」で Huemdal を許可してください。" } }
+      }
+    },
+    "Hue Bridge unreachable" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "Hue Bridge に接続できません" } }
+      }
+    }
+  }
+}

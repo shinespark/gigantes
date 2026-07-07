@@ -59,9 +59,21 @@ private struct GeneralSection: View {
     @Environment(AppState.self) private var appState
     @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
     @State private var launchAtLoginError: String?
+    @State private var language = AppLanguage.current
 
     var body: some View {
         Section("General") {
+            Picker("Language", selection: $language) {
+                Text("System Default").tag(AppLanguage.system)
+                Text(verbatim: "English").tag(AppLanguage.english)
+                Text(verbatim: "日本語").tag(AppLanguage.japanese)
+            }
+            .onChange(of: language) { old, new in
+                guard old != new else { return }
+                new.apply()
+                AppLanguage.relaunchApp()
+            }
+
             Toggle("Launch at login", isOn: $launchAtLogin)
                 .onChange(of: launchAtLogin) { _, enabled in
                     do {
@@ -80,7 +92,7 @@ private struct GeneralSection: View {
                 Text(launchAtLoginError).foregroundStyle(.red)
             }
 
-            LabeledContent("Force ON AIR shortcut") {
+            LabeledContent("Now ON AIR") {
                 ShortcutRecorderView(
                     shortcut: hotkeyBinding,
                     onRecordingChanged: { appState.setHotkeyRecording($0) }
@@ -98,6 +110,7 @@ private struct GeneralSection: View {
             set: { appState.config.hotkey = $0 }
         )
     }
+
 }
 
 // MARK: - Bridge の発見とペアリング
@@ -155,7 +168,7 @@ private struct BridgeSection: View {
             if discovered.count > 1 {
                 Picker("Found bridges", selection: bridgeSelection) {
                     ForEach(discovered) { bridge in
-                        Text("\(bridge.ip) (\(bridge.id))").tag(bridge as DiscoveredBridge?)
+                        Text(verbatim: "\(bridge.ip) (\(bridge.id))").tag(bridge as DiscoveredBridge?)
                     }
                 }
             }
