@@ -52,10 +52,4 @@ make run     # build and launch the app
 - If you manually change the lamp during a meeting, the lamp is still restored to its **pre-meeting** snapshot when the meeting ends.
 - If the bridge is unreachable, the app retries with exponential backoff and shows an error in the menu bar; camera monitoring continues.
 
-## Roadmap
-
-- Microphone detection (audio-only meetings)
-- Multiple lamps / Hue scenes
-- Manual override from the menu bar
-
 See [docs/design.md](docs/design.md) (Japanese) for the full design.
