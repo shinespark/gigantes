@@ -44,6 +44,24 @@ final class SnapshotStoreTests: XCTestCase {
         XCTAssertEqual(UserDefaultsSnapshotStore(defaults: defaults).load(), [])
     }
 
+    func testSnapshotWithoutMirekKeyDecodes() throws {
+        // mirek フィールド追加前に保存されたスナップショットも読めること
+        let legacyJSON = Data("""
+        [{
+            "lightID": "light-1",
+            "isOn": true,
+            "colorXY": {"x": 0.4, "y": 0.35},
+            "brightness": 42.5,
+            "capturedAt": 700000000
+        }]
+        """.utf8)
+
+        let snapshots = try JSONDecoder().decode([LightSnapshot].self, from: legacyJSON)
+
+        XCTAssertEqual(snapshots.first?.lightID, "light-1")
+        XCTAssertNil(snapshots.first?.mirek)
+    }
+
     func testClearRemovesSnapshots() {
         let store = UserDefaultsSnapshotStore(defaults: defaults)
         store.save([LightSnapshot(

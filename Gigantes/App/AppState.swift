@@ -28,18 +28,34 @@ enum AppPhase: Equatable {
     }
 }
 
+/// ON AIR 時の動作モード。
+enum OnAirMode: String, Codable {
+    /// 選択したランプを単色に変更する
+    case color
+    /// Hue シーンを適用する(対象ランプはシーンが決める)
+    case scene
+}
+
 /// UserDefaults に永続化するユーザー設定(秘密情報は含まない)。
 struct AppConfig: Codable, Equatable {
     var bridgeIP: String?
     var bridgeID: String?
     var lightIDs: [String] = []
+    var onAirMode: OnAirMode = .color
     var onAirColor: RGBColor = .red
     var onAirBrightness: Double = 100
+    var onAirSceneID: String?
+    /// "シーン名 – 部屋名" の表示用キャッシュ(再取得なしで表示するため)
+    var onAirSceneName: String?
     /// Force ON AIR のグローバルショートカット。nil = 明示的に解除された状態
     var hotkey: HotkeyShortcut? = .default
 
     var isComplete: Bool {
-        bridgeIP != nil && bridgeID != nil && !lightIDs.isEmpty
+        guard bridgeIP != nil, bridgeID != nil else { return false }
+        switch onAirMode {
+        case .color: return !lightIDs.isEmpty
+        case .scene: return onAirSceneID != nil
+        }
     }
 
     init() {}
@@ -50,7 +66,8 @@ struct AppConfig: Codable, Equatable {
     // - hotkey は「キーなし(旧設定)= デフォルト適用」と「null(明示的な解除)= nil」を
     //   区別する必要があるため、encode 時に nil を null として明示的に書く
     private enum CodingKeys: String, CodingKey {
-        case bridgeIP, bridgeID, lightIDs, onAirColor, onAirBrightness, hotkey
+        case bridgeIP, bridgeID, lightIDs, onAirMode, onAirColor, onAirBrightness
+        case onAirSceneID, onAirSceneName, hotkey
     }
 
     init(from decoder: Decoder) throws {
@@ -58,8 +75,11 @@ struct AppConfig: Codable, Equatable {
         bridgeIP = try container.decodeIfPresent(String.self, forKey: .bridgeIP)
         bridgeID = try container.decodeIfPresent(String.self, forKey: .bridgeID)
         lightIDs = try container.decodeIfPresent([String].self, forKey: .lightIDs) ?? []
+        onAirMode = try container.decodeIfPresent(OnAirMode.self, forKey: .onAirMode) ?? .color
         onAirColor = try container.decodeIfPresent(RGBColor.self, forKey: .onAirColor) ?? .red
         onAirBrightness = try container.decodeIfPresent(Double.self, forKey: .onAirBrightness) ?? 100
+        onAirSceneID = try container.decodeIfPresent(String.self, forKey: .onAirSceneID)
+        onAirSceneName = try container.decodeIfPresent(String.self, forKey: .onAirSceneName)
         if container.contains(.hotkey) {
             hotkey = try container.decodeIfPresent(HotkeyShortcut.self, forKey: .hotkey)
         } else {
@@ -72,8 +92,11 @@ struct AppConfig: Codable, Equatable {
         try container.encodeIfPresent(bridgeIP, forKey: .bridgeIP)
         try container.encodeIfPresent(bridgeID, forKey: .bridgeID)
         try container.encode(lightIDs, forKey: .lightIDs)
+        try container.encode(onAirMode, forKey: .onAirMode)
         try container.encode(onAirColor, forKey: .onAirColor)
         try container.encode(onAirBrightness, forKey: .onAirBrightness)
+        try container.encodeIfPresent(onAirSceneID, forKey: .onAirSceneID)
+        try container.encodeIfPresent(onAirSceneName, forKey: .onAirSceneName)
         try container.encode(hotkey, forKey: .hotkey)
     }
 
@@ -191,7 +214,26 @@ final class AppState {
         coordinator = nil
         manualOverride = false
 
-        guard !config.lightIDs.isEmpty, let hue = hueClient else {
+        let onAirAction: MeetingCoordinator.Configuration.OnAirAction
+        switch config.onAirMode {
+        case .color:
+            guard !config.lightIDs.isEmpty else {
+                phase = .unconfigured
+                return
+            }
+            onAirAction = .color(
+                lightIDs: config.lightIDs,
+                color: config.onAirColor.xy,
+                brightness: config.onAirBrightness
+            )
+        case .scene:
+            guard let sceneID = config.onAirSceneID else {
+                phase = .unconfigured
+                return
+            }
+            onAirAction = .scene(sceneID: sceneID)
+        }
+        guard let hue = hueClient else {
             phase = .unconfigured
             return
         }
@@ -201,11 +243,7 @@ final class AppState {
             detector: detector,
             hue: hue,
             snapshots: snapshots,
-            configuration: .init(
-                lightIDs: config.lightIDs,
-                onAirColor: config.onAirColor.xy,
-                onAirBrightness: config.onAirBrightness
-            ),
+            configuration: .init(onAirAction: onAirAction),
             onPhaseChange: { [weak self] phase in
                 Task { @MainActor in self?.phase = phase }
             }

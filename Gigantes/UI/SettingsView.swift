@@ -10,7 +10,9 @@ struct SettingsView: View {
                 SetupProgressSection()
             }
             BridgeSection()
-            LightSection()
+            if appState.config.onAirMode == .color {
+                LightSection()
+            }
             OnAirSection()
             GeneralSection()
         }
@@ -32,7 +34,11 @@ private struct SetupProgressSection: View {
     var body: some View {
         Section("Setup") {
             stepRow(1, "Pair with your Hue Bridge", done: appState.hueClient != nil)
-            stepRow(2, "Choose the ON AIR lights", done: !appState.config.lightIDs.isEmpty)
+            if appState.config.onAirMode == .scene {
+                stepRow(2, "Choose the ON AIR scene", done: appState.config.onAirSceneID != nil)
+            } else {
+                stepRow(2, "Choose the ON AIR lights", done: !appState.config.lightIDs.isEmpty)
+            }
             stepRow(3, "Pick a color and test it", done: false)
         }
     }
@@ -266,29 +272,114 @@ private struct LightSection: View {
 
 private struct OnAirSection: View {
     @Environment(AppState.self) private var appState
+    @State private var scenes: [HueScene] = []
+    @State private var groupNames: [String: String] = [:]
+    @State private var sceneLoadError: String?
     @State private var testResult: String?
     @State private var testing = false
 
     var body: some View {
         Section("ON AIR") {
-            ColorPicker("Color", selection: colorSelection, supportsOpacity: false)
+            Picker("Mode", selection: modeSelection) {
+                Text("Color").tag(OnAirMode.color)
+                Text("Scene").tag(OnAirMode.scene)
+            }
+            .pickerStyle(.segmented)
 
-            LabeledContent("Brightness") {
-                Slider(value: brightnessSelection, in: 1...100) {
-                    EmptyView()
-                } minimumValueLabel: {
-                    Image(systemName: "sun.min")
-                } maximumValueLabel: {
-                    Image(systemName: "sun.max")
+            switch appState.config.onAirMode {
+            case .color:
+                ColorPicker("Color", selection: colorSelection, supportsOpacity: false)
+
+                LabeledContent("Brightness") {
+                    Slider(value: brightnessSelection, in: 1...100) {
+                        EmptyView()
+                    } minimumValueLabel: {
+                        Image(systemName: "sun.min")
+                    } maximumValueLabel: {
+                        Image(systemName: "sun.max")
+                    }
+                    .frame(width: 220)
                 }
-                .frame(width: 220)
+
+            case .scene:
+                Picker("Scene", selection: sceneSelection) {
+                    Text("None").tag(nil as String?)
+                    ForEach(scenes) { scene in
+                        Text(label(for: scene)).tag(scene.id as String?)
+                    }
+                }
+                if let sceneLoadError {
+                    Text(sceneLoadError).foregroundStyle(.red)
+                }
+                if isSavedSceneMissing {
+                    Text("The selected scene was not found on the bridge. It may have been deleted.")
+                        .foregroundStyle(.orange)
+                }
+                Button("Reload Scenes") { Task { await loadScenes() } }
             }
 
-            Button("Test Lights") { Task { await testLights() } }
-                .disabled(testing || appState.config.lightIDs.isEmpty || appState.hueClient == nil)
+            Button("Test") { Task { await runTest() } }
+                .disabled(testing || appState.hueClient == nil || !testTargetSelected)
             if let testResult {
                 Text(testResult).foregroundStyle(.secondary)
             }
+        }
+        .task(id: appState.config.bridgeID) {
+            await loadScenes()
+        }
+    }
+
+    private var testTargetSelected: Bool {
+        switch appState.config.onAirMode {
+        case .color: !appState.config.lightIDs.isEmpty
+        case .scene: appState.config.onAirSceneID != nil
+        }
+    }
+
+    private var isSavedSceneMissing: Bool {
+        guard let sceneID = appState.config.onAirSceneID, !scenes.isEmpty else { return false }
+        return !scenes.contains { $0.id == sceneID }
+    }
+
+    private func label(for scene: HueScene) -> String {
+        if let groupID = scene.group?.rid, let groupName = groupNames[groupID] {
+            return "\(scene.displayName) – \(groupName)"
+        }
+        return scene.displayName
+    }
+
+    private var modeSelection: Binding<OnAirMode> {
+        Binding(
+            get: { appState.config.onAirMode },
+            set: { appState.config.onAirMode = $0 }
+        )
+    }
+
+    private var sceneSelection: Binding<String?> {
+        Binding(
+            get: { appState.config.onAirSceneID },
+            set: { sceneID in
+                appState.config.onAirSceneID = sceneID
+                appState.config.onAirSceneName = scenes
+                    .first { $0.id == sceneID }
+                    .map(label(for:))
+            }
+        )
+    }
+
+    private func loadScenes() async {
+        guard let client = appState.hueClient else { return }
+        do {
+            let groups = try await client.listGroups()
+            groupNames = Dictionary(
+                groups.map { ($0.id, $0.metadata?.name ?? "") },
+                uniquingKeysWith: { first, _ in first }
+            )
+            scenes = try await client.listScenes()
+                .sorted { label(for: $0).localizedStandardCompare(label(for: $1)) == .orderedAscending }
+            sceneLoadError = nil
+        } catch {
+            sceneLoadError = error.localizedDescription
         }
     }
 
@@ -314,26 +405,41 @@ private struct OnAirSection: View {
         )
     }
 
-    /// 選択中の全ランプを ON AIR 色で 3 秒間点灯して元の状態に戻す。
-    private func testLights() async {
+    /// ON AIR 動作(単色 or シーン)を 3 秒間適用して元の状態に戻す。
+    private func runTest() async {
         guard let client = appState.hueClient else { return }
-        let lightIDs = appState.config.lightIDs
-        guard !lightIDs.isEmpty else { return }
         testing = true
         defer { testing = false }
         do {
+            let lightIDs: [String]
+            switch appState.config.onAirMode {
+            case .color:
+                lightIDs = appState.config.lightIDs
+            case .scene:
+                guard let sceneID = appState.config.onAirSceneID else { return }
+                lightIDs = try await client.sceneLightIDs(sceneID: sceneID)
+            }
+            guard !lightIDs.isEmpty else { return }
+
             var before: [String: LightSettings] = [:]
             for lightID in lightIDs {
                 before[lightID] = try await client.currentSettings(lightID: lightID)
             }
-            let onAir = LightSettings(
-                isOn: true,
-                color: appState.config.onAirColor.xy,
-                brightness: appState.config.onAirBrightness
-            )
-            for lightID in lightIDs {
-                try await client.apply(onAir, to: lightID)
+
+            switch appState.config.onAirMode {
+            case .color:
+                let onAir = LightSettings(
+                    isOn: true,
+                    color: appState.config.onAirColor.xy,
+                    brightness: appState.config.onAirBrightness
+                )
+                for lightID in lightIDs {
+                    try await client.apply(onAir, to: lightID)
+                }
+            case .scene:
+                try await client.recallScene(sceneID: appState.config.onAirSceneID!)
             }
+
             try await Task.sleep(for: .seconds(3))
             for (lightID, settings) in before {
                 try await client.apply(settings, to: lightID)

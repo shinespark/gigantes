@@ -94,6 +94,41 @@ final class AppConfigCodableTests: XCTestCase {
         XCTAssertNil(decoded.hotkey, "明示的な解除はデフォルトに戻らず nil のまま保持される")
     }
 
+    func testSceneModeConfigSurvivesRoundTrip() throws {
+        var config = AppConfig()
+        config.bridgeIP = "192.0.2.1"
+        config.bridgeID = "0123456789abcdef"
+        config.onAirMode = .scene
+        config.onAirSceneID = "scene-uuid"
+        config.onAirSceneName = "Red Alert – Office"
+        config.lightIDs = ["light-1"]
+
+        let decoded = try JSONDecoder().decode(
+            AppConfig.self,
+            from: JSONEncoder().encode(config)
+        )
+
+        XCTAssertEqual(decoded, config)
+    }
+
+    func testIsCompleteIsModeAware() {
+        var config = AppConfig()
+        config.bridgeIP = "192.0.2.1"
+        config.bridgeID = "0123456789abcdef"
+
+        // color モード: lightIDs が必要
+        config.onAirMode = .color
+        XCTAssertFalse(config.isComplete)
+        config.lightIDs = ["light-1"]
+        XCTAssertTrue(config.isComplete)
+
+        // scene モード: sceneID が必要(lightIDs は無関係)
+        config.onAirMode = .scene
+        XCTAssertFalse(config.isComplete)
+        config.onAirSceneID = "scene-uuid"
+        XCTAssertTrue(config.isComplete)
+    }
+
     func testCustomHotkeySurvivesRoundTrip() throws {
         var config = AppConfig()
         config.hotkey = HotkeyShortcut(keyCode: 31, carbonModifiers: UInt32(cmdKey | controlKey), keyLabel: "O")

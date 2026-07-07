@@ -1,11 +1,13 @@
 import Foundation
 
 /// 会議開始前のランプ状態。会議終了時にこの状態へ復元する。
+/// `colorXY` と `mirek`(色温度)は排他で、どちらか一方のみ値を持つ。
 struct LightSnapshot: Codable, Equatable {
     let lightID: String
     let isOn: Bool
     let colorXY: CIEXYColor?
     let brightness: Double?
+    var mirek: Int?
     let capturedAt: Date
 }
 

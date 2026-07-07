@@ -73,12 +73,27 @@ struct HueLight: Decodable, Identifiable, Equatable {
     struct ColorValue: Codable, Equatable {
         var xy: CIEXYColor
     }
+    struct ColorTemperature: Decodable, Equatable {
+        var mirek: Int?
+        var mirekValid: Bool?
+
+        enum CodingKeys: String, CodingKey {
+            case mirek
+            case mirekValid = "mirek_valid"
+        }
+    }
 
     let id: String
     var metadata: Metadata?
     var on: On?
     var dimming: Dimming?
     var color: ColorValue?
+    var colorTemperature: ColorTemperature?
+
+    enum CodingKeys: String, CodingKey {
+        case id, metadata, on, dimming, color
+        case colorTemperature = "color_temperature"
+    }
 
     var displayName: String {
         let name = metadata?.name ?? ""
@@ -88,15 +103,76 @@ struct HueLight: Decodable, Identifiable, Equatable {
 
 /// `PUT /clip/v2/resource/light/<id>` の body。nil のフィールドは送信しない。
 struct HueLightUpdate: Encodable, Equatable {
+    struct MirekValue: Encodable, Equatable {
+        var mirek: Int
+    }
+
     var on: HueLight.On?
     var dimming: HueLight.Dimming?
     var color: HueLight.ColorValue?
+    var colorTemperature: MirekValue?
+
+    enum CodingKeys: String, CodingKey {
+        case on, dimming, color
+        case colorTemperature = "color_temperature"
+    }
 
     init(settings: LightSettings) {
         on = settings.isOn.map(HueLight.On.init(on:))
         dimming = settings.brightness.map(HueLight.Dimming.init(brightness:))
-        color = settings.color.map(HueLight.ColorValue.init(xy:))
+        // 色温度と xy 色は同時に送信しない(色温度モードのランプは mirek で復元する)
+        if let mirek = settings.mirek {
+            colorTemperature = MirekValue(mirek: mirek)
+            color = nil
+        } else {
+            color = settings.color.map(HueLight.ColorValue.init(xy:))
+        }
     }
+}
+
+// MARK: - シーン
+
+/// `GET /clip/v2/resource/scene` の scene リソース(必要なフィールドのみ)。
+struct HueScene: Decodable, Identifiable, Equatable {
+    struct ResourceRef: Decodable, Equatable {
+        var rid: String
+        var rtype: String
+    }
+    struct Action: Decodable, Equatable {
+        var target: ResourceRef
+    }
+
+    let id: String
+    var metadata: HueLight.Metadata?
+    var group: ResourceRef?
+    var actions: [Action]?
+
+    var displayName: String {
+        let name = metadata?.name ?? ""
+        return name.isEmpty ? id : name
+    }
+
+    /// このシーンの recall が変更するランプの ID 一覧。
+    var targetLightIDs: [String] {
+        (actions ?? []).filter { $0.target.rtype == "light" }.map(\.target.rid)
+    }
+}
+
+/// room / zone リソース(シーンの所属グループ名の表示に使う)。
+struct HueGroup: Decodable, Identifiable, Equatable {
+    let id: String
+    var metadata: HueLight.Metadata?
+}
+
+/// `PUT /clip/v2/resource/scene/<id>` の body。
+struct HueSceneRecall: Encodable, Equatable {
+    struct Recall: Encodable, Equatable {
+        var action: String
+    }
+
+    var recall: Recall
+
+    static let active = HueSceneRecall(recall: Recall(action: "active"))
 }
 
 // MARK: - ペアリング(v1 API)

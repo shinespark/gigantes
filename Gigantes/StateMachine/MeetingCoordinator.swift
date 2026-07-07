@@ -7,9 +7,14 @@ import os
 /// この actor は Effect の実行(タイマー、スナップショット、ランプ操作)だけを行う。
 actor MeetingCoordinator {
     struct Configuration: Sendable {
-        var lightIDs: [String]
-        var onAirColor: CIEXYColor
-        var onAirBrightness: Double
+        enum OnAirAction: Sendable {
+            /// 指定ランプを単色に変更する
+            case color(lightIDs: [String], color: CIEXYColor, brightness: Double)
+            /// Hue シーンを適用する(対象ランプは適用直前にシーンから解決する)
+            case scene(sceneID: String)
+        }
+
+        var onAirAction: OnAirAction
     }
 
     private static let logger = Logger(subsystem: "dev.shinespark.gigantes", category: "MeetingCoordinator")
@@ -108,13 +113,53 @@ actor MeetingCoordinator {
     }
 
     private func captureSnapshotThenSetOnAir() async {
-        // 既存のスナップショットは上書きしない(復元先を壊さない)
+        switch configuration.onAirAction {
+        case .color(let lightIDs, let color, let brightness):
+            let snapshotted = await captureSnapshots(for: lightIDs)
+
+            let onAir = LightSettings(isOn: true, color: color, brightness: brightness)
+            var anyApplied = false
+            for lightID in lightIDs where snapshotted.contains(lightID) {
+                let applied = await withRetry("set onAir color for light \(lightID)") {
+                    try await self.hue.apply(onAir, to: lightID)
+                }
+                anyApplied = anyApplied || applied
+            }
+            if anyApplied {
+                onPhaseChange(.onAir)
+            }
+
+        case .scene(let sceneID):
+            // シーンは Hue アプリ側で編集され得るため、対象ランプは毎回解決する
+            var lightIDs: [String] = []
+            let resolved = await withRetry("resolve lights of scene \(sceneID)") {
+                lightIDs = try await self.hue.sceneLightIDs(sceneID: sceneID)
+            }
+            // 解決できなければランプには一切触らない(復元できなくなるため)
+            guard resolved else { return }
+
+            let snapshotted = await captureSnapshots(for: lightIDs)
+            // 1 件もスナップショットできていなければ recall しない
+            guard lightIDs.isEmpty || lightIDs.contains(where: snapshotted.contains) else { return }
+
+            let recalled = await withRetry("recall scene \(sceneID)") {
+                try await self.hue.recallScene(sceneID: sceneID)
+            }
+            if recalled {
+                onPhaseChange(.onAir)
+            }
+        }
+    }
+
+    /// 指定ランプの現在状態をスナップショットに追記し、ランプを変更する前に必ず永続化する。
+    /// 既存のスナップショットは上書きしない(復元先を壊さない)。
+    /// - Returns: スナップショットが存在する(以前から含む)ランプ ID の集合。
+    ///   取得に失敗したランプはここに含まれず、呼び出し側は ON AIR 対象から外す。
+    private func captureSnapshots(for lightIDs: [String]) async -> Set<String> {
         var captured = snapshots.load()
         let alreadyCaptured = Set(captured.map(\.lightID))
 
-        // 取得できなかったランプはスナップショットに入らず、ON AIR 色にもしない
-        // (復元できなくなるため)
-        for lightID in configuration.lightIDs where !alreadyCaptured.contains(lightID) {
+        for lightID in lightIDs where !alreadyCaptured.contains(lightID) {
             _ = await withRetry("capture snapshot for light \(lightID)") {
                 let current = try await self.hue.currentSettings(lightID: lightID)
                 captured.append(LightSnapshot(
@@ -122,30 +167,14 @@ actor MeetingCoordinator {
                     isOn: current.isOn ?? true,
                     colorXY: current.color,
                     brightness: current.brightness,
+                    mirek: current.mirek,
                     capturedAt: Date()
                 ))
             }
         }
 
-        // 色変更より先に必ず永続化する
         snapshots.save(captured)
-
-        let onAir = LightSettings(
-            isOn: true,
-            color: configuration.onAirColor,
-            brightness: configuration.onAirBrightness
-        )
-        let snapshotted = Set(captured.map(\.lightID))
-        var anyApplied = false
-        for lightID in configuration.lightIDs where snapshotted.contains(lightID) {
-            let applied = await withRetry("set onAir color for light \(lightID)") {
-                try await self.hue.apply(onAir, to: lightID)
-            }
-            anyApplied = anyApplied || applied
-        }
-        if anyApplied {
-            onPhaseChange(.onAir)
-        }
+        return Set(captured.map(\.lightID))
     }
 
     private func restoreSnapshot() async {
@@ -161,7 +190,8 @@ actor MeetingCoordinator {
             let settings = LightSettings(
                 isOn: snapshot.isOn,
                 color: snapshot.colorXY,
-                brightness: snapshot.brightness
+                brightness: snapshot.brightness,
+                mirek: snapshot.mirek
             )
             let restored = await withRetry("restore snapshot for light \(snapshot.lightID)") {
                 try await self.hue.apply(settings, to: snapshot.lightID)
