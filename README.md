@@ -1,4 +1,8 @@
-# Huemdal
+<p align="center">
+  <img src="docs/logo.png" width="128" alt="Huemdal logo">
+</p>
+
+<h1 align="center">Huemdal</h1>
 
 English | [日本語](README.ja.md)
 
