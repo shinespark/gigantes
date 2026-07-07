@@ -6,7 +6,10 @@
 
 English | [日本語](README.ja.md)
 
-A macOS app that changes the state of your Philips Hue lights based on camera usage, and restores them to their previous state when the camera is no longer in use.
+A macOS app that changes the state of your Philips Hue lights based on camera usage.
+
+When the camera is no longer in use, it restores the lights to their previous state.
+
 During remote meetings and the like, it lets your family know "please don't come in right now."
 
 ## Requirements
@@ -28,5 +31,7 @@ Download the latest `Huemdal-<version>.zip` from [Releases](https://github.com/s
 
 ## Privacy
 
-- Huemdal **never accesses camera video or microphone audio**. It only reads the system flag that says "some process is using this camera" (CoreMediaIO's `DeviceIsRunningSomewhere`), which is also why macOS shows no camera permission prompt.
-- All communication stays on your local network, directly with your Hue Bridge over TLS. Nothing is sent to the internet, with one exception: if mDNS discovery fails, the app queries `discovery.meethue.com` once to locate your bridge.
+- Huemdal **never accesses camera video or microphone audio**.
+  - It only reads `DeviceIsRunningSomewhere`, a flag that says **whether the camera is in use** — which is also why macOS shows no camera permission prompt.
+- All communication stays on your local network, directly with your Hue Bridge over TLS.
+  - As a rule, nothing is sent to the internet. The one exception: if mDNS discovery fails, the app queries `discovery.meethue.com` once to locate your bridge.

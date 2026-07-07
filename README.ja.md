@@ -6,7 +6,10 @@
 
 [English](README.md) | 日本語
 
-カメラの利用状況に応じて、Philips Hue のライトの状態を変えられる macOS アプリです。カメラの利用を終えると元の状態に復元します。
+カメラの利用状況に応じて、Philips Hue のライトの状態を変えられる macOS アプリです。
+
+カメラの利用を終えると元の状態に復元します。
+
 リモート会議中などに、家族に「今は入ってこないで」というメッセージを伝えられます。
 
 ## 動作要件
@@ -16,7 +19,7 @@
 
 ## インストール
 
-[Releases](https://github.com/shinespark/huemdal/releases) から最新の `Huemdal-<version>.zip` をダウンロードして展開し、`Huemdal.app` をアプリケーションフォルダに移動してください。リリースビルドは Developer ID で署名され Apple の公証(notarization)を受けているため、Gatekeeper の回避操作なしで起動できます。
+[Releases](https://github.com/shinespark/huemdal/releases) から最新の `Huemdal-<version>.zip` をダウンロードして展開し、`Huemdal.app` をアプリケーションフォルダに移動してください。
 
 ## セットアップ
 
@@ -28,5 +31,7 @@
 
 ## プライバシー
 
-- Huemdal は**カメラ映像やマイク音声には一切アクセスしません**。「いずれかのプロセスがこのカメラを使用中」というシステムフラグ(CoreMediaIO の `DeviceIsRunningSomewhere`)を読むだけです。そのため macOS のカメラ許可ダイアログも表示されません。
-- 通信はすべてローカルネットワーク内で完結し、Hue Bridge と直接 TLS で通信します。インターネットへの送信は行いません。唯一の例外として、mDNS でのブリッジ発見に失敗した場合のみ `discovery.meethue.com` に 1 回問い合わせます。
+- **カメラ映像やマイク音声には一切アクセスしません**。
+  - **カメラが利用中かどうか** という `DeviceIsRunningSomewhere`を読むだけです。そのため macOS のカメラ許可ダイアログも表示されません。
+- 通信はすべてローカルネットワーク内で完結し、Hue Bridge と直接 TLS で通信します。
+  - 原則インターネットとの通信は行いません。唯一の例外として、mDNS でのブリッジ発見に失敗した場合のみ `discovery.meethue.com` に 1 回問い合わせます。
