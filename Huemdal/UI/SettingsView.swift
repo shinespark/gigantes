@@ -4,49 +4,44 @@ import SwiftUI
 struct SettingsView: View {
     @Environment(AppState.self) private var appState
 
+    private enum Tab {
+        case general, bridge, lights
+    }
+
+    @State private var selectedTab = Tab.general
+
     var body: some View {
-        Form {
-            if !isSetUp {
-                SetupProgressSection()
+        TabView(selection: $selectedTab) {
+            Form {
+                GeneralSection()
             }
-            GeneralSection()
-            BridgeSection()
-            LightSection()
-            OnAirSection()
+            .formStyle(.grouped)
+            .tabItem { Label("General", systemImage: "gearshape") }
+            .tag(Tab.general)
+
+            Form {
+                BridgeSection()
+            }
+            .formStyle(.grouped)
+            .tabItem { Label("Bridge", systemImage: "wifi.router") }
+            .tag(Tab.bridge)
+
+            Form {
+                LightSection()
+                OnAirSection()
+            }
+            .formStyle(.grouped)
+            .tabItem { Label("Lights", systemImage: "lightbulb") }
+            .tag(Tab.lights)
         }
-        .formStyle(.grouped)
         .frame(width: 480)
-        .frame(minHeight: 500)
-    }
-
-    private var isSetUp: Bool {
-        appState.config.isComplete && appState.hueClient != nil
-    }
-}
-
-// MARK: - オンボーディング(セットアップ進捗)
-
-private struct SetupProgressSection: View {
-    @Environment(AppState.self) private var appState
-
-    var body: some View {
-        Section("Setup") {
-            stepRow(1, "Pair with your Hue Bridge", done: appState.hueClient != nil)
-            if appState.config.onAirMode == .scene {
-                stepRow(2, "Choose the ON AIR scene", done: appState.config.onAirSceneID != nil)
-            } else {
-                stepRow(2, "Choose the ON AIR lights", done: appState.config.allLights || !appState.config.lightIDs.isEmpty)
+        .frame(minHeight: 360)
+        .onAppear {
+            // 未設定でウィンドウが自動オープンされたときは、次にやるべき
+            // ペアリング操作が見えるよう Bridge タブから始める
+            if appState.hueClient == nil {
+                selectedTab = .bridge
             }
-            stepRow(3, "Pick a color and test it", done: false)
-        }
-    }
-
-    private func stepRow(_ number: Int, _ title: LocalizedStringKey, done: Bool) -> some View {
-        HStack(spacing: 8) {
-            Image(systemName: done ? "checkmark.circle.fill" : "\(number).circle")
-                .foregroundStyle(done ? .green : .secondary)
-            Text(title)
-                .foregroundStyle(done ? .secondary : .primary)
         }
     }
 }

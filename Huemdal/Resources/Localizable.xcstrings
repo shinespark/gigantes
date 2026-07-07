@@ -2,36 +2,6 @@
   "sourceLanguage" : "en",
   "version" : "1.0",
   "strings" : {
-    "Setup" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "ja" : { "stringUnit" : { "state" : "translated", "value" : "セットアップ" } }
-      }
-    },
-    "Pair with your Hue Bridge" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "ja" : { "stringUnit" : { "state" : "translated", "value" : "Hue Bridge とペアリングする" } }
-      }
-    },
-    "Choose the ON AIR scene" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "ja" : { "stringUnit" : { "state" : "translated", "value" : "ON AIR にするシーンを選ぶ" } }
-      }
-    },
-    "Choose the ON AIR lights" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "ja" : { "stringUnit" : { "state" : "translated", "value" : "ON AIR にするライトを選ぶ" } }
-      }
-    },
-    "Pick a color and test it" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "ja" : { "stringUnit" : { "state" : "translated", "value" : "色を選んでテストする" } }
-      }
-    },
     "General" : {
       "extractionState" : "manual",
       "localizations" : {
