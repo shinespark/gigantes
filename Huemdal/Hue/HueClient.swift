@@ -45,7 +45,7 @@ struct HueClient: HueControlling {
     /// リンクボタン未押下(error type 101)は失敗ではなく `.linkButtonNotPressed` を返すので、
     /// 呼び出し側(設定画面)が数秒間隔でポーリングする。
     func attemptPairing() async throws -> PairingAttemptResult {
-        let devicetype = "gigantes#\(Host.current().localizedName ?? "mac")"
+        let devicetype = "huemdal#\(Host.current().localizedName ?? "mac")"
         var request = URLRequest(url: URL(string: "https://\(bridgeIP)/api")!)
         request.httpMethod = "POST"
         request.httpBody = try JSONEncoder().encode(["devicetype": devicetype])

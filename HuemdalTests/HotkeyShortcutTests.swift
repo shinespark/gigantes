@@ -1,7 +1,7 @@
 import AppKit
 import Carbon.HIToolbox
 import XCTest
-@testable import Gigantes
+@testable import Huemdal
 
 final class HotkeyShortcutTests: XCTestCase {
 

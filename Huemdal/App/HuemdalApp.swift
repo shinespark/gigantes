@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct GigantesApp: App {
+struct HuemdalApp: App {
     @State private var appState = AppState()
 
     var body: some Scene {

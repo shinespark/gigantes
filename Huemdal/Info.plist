@@ -11,7 +11,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>Gigantes</string>
+	<string>Huemdal</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -25,7 +25,7 @@
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
 	<key>NSLocalNetworkUsageDescription</key>
-	<string>Gigantes connects to your Philips Hue Bridge on the local network to control your lights.</string>
+	<string>Huemdal connects to your Philips Hue Bridge on the local network to control your lights.</string>
 	<key>NSBonjourServices</key>
 	<array>
 		<string>_hue._tcp</string>
