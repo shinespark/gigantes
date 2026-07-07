@@ -32,15 +32,14 @@ enum AppPhase: Equatable {
 struct AppConfig: Codable, Equatable {
     var bridgeIP: String?
     var bridgeID: String?
-    var lightID: String?
-    var lightName: String?
+    var lightIDs: [String] = []
     var onAirColor: RGBColor = .red
     var onAirBrightness: Double = 100
     /// Force ON AIR のグローバルショートカット。nil = 明示的に解除された状態
     var hotkey: HotkeyShortcut? = .default
 
     var isComplete: Bool {
-        bridgeIP != nil && bridgeID != nil && lightID != nil
+        bridgeIP != nil && bridgeID != nil && !lightIDs.isEmpty
     }
 
     init() {}
@@ -51,15 +50,14 @@ struct AppConfig: Codable, Equatable {
     // - hotkey は「キーなし(旧設定)= デフォルト適用」と「null(明示的な解除)= nil」を
     //   区別する必要があるため、encode 時に nil を null として明示的に書く
     private enum CodingKeys: String, CodingKey {
-        case bridgeIP, bridgeID, lightID, lightName, onAirColor, onAirBrightness, hotkey
+        case bridgeIP, bridgeID, lightIDs, onAirColor, onAirBrightness, hotkey
     }
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         bridgeIP = try container.decodeIfPresent(String.self, forKey: .bridgeIP)
         bridgeID = try container.decodeIfPresent(String.self, forKey: .bridgeID)
-        lightID = try container.decodeIfPresent(String.self, forKey: .lightID)
-        lightName = try container.decodeIfPresent(String.self, forKey: .lightName)
+        lightIDs = try container.decodeIfPresent([String].self, forKey: .lightIDs) ?? []
         onAirColor = try container.decodeIfPresent(RGBColor.self, forKey: .onAirColor) ?? .red
         onAirBrightness = try container.decodeIfPresent(Double.self, forKey: .onAirBrightness) ?? 100
         if container.contains(.hotkey) {
@@ -73,8 +71,7 @@ struct AppConfig: Codable, Equatable {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encodeIfPresent(bridgeIP, forKey: .bridgeIP)
         try container.encodeIfPresent(bridgeID, forKey: .bridgeID)
-        try container.encodeIfPresent(lightID, forKey: .lightID)
-        try container.encodeIfPresent(lightName, forKey: .lightName)
+        try container.encode(lightIDs, forKey: .lightIDs)
         try container.encode(onAirColor, forKey: .onAirColor)
         try container.encode(onAirBrightness, forKey: .onAirBrightness)
         try container.encode(hotkey, forKey: .hotkey)
@@ -194,7 +191,7 @@ final class AppState {
         coordinator = nil
         manualOverride = false
 
-        guard let lightID = config.lightID, let hue = hueClient else {
+        guard !config.lightIDs.isEmpty, let hue = hueClient else {
             phase = .unconfigured
             return
         }
@@ -205,7 +202,7 @@ final class AppState {
             hue: hue,
             snapshots: snapshots,
             configuration: .init(
-                lightID: lightID,
+                lightIDs: config.lightIDs,
                 onAirColor: config.onAirColor.xy,
                 onAirBrightness: config.onAirBrightness
             ),

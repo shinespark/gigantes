@@ -63,25 +63,23 @@ final class HotkeyShortcutTests: XCTestCase {
 
 final class AppConfigCodableTests: XCTestCase {
 
-    func testLegacyConfigWithoutHotkeyKeyGetsDefaultAndKeepsBridgeSettings() throws {
-        // v0.2 以前の保存形式(hotkey キーなし)
-        let legacyJSON = Data("""
+    func testConfigWithMissingKeysDecodesWithDefaults() throws {
+        // 過去バージョンの保存形式(キー欠落・未知キー)でも decode でき、
+        // Bridge 設定が失われないこと
+        let json = Data("""
         {
             "bridgeIP": "192.0.2.1",
             "bridgeID": "0123456789abcdef",
-            "lightID": "light-uuid",
-            "lightName": "Desk lamp",
-            "onAirColor": {"red": 1, "green": 0, "blue": 0},
-            "onAirBrightness": 80
+            "unknownKey": true
         }
         """.utf8)
 
-        let config = try JSONDecoder().decode(AppConfig.self, from: legacyJSON)
+        let config = try JSONDecoder().decode(AppConfig.self, from: json)
 
         XCTAssertEqual(config.bridgeIP, "192.0.2.1")
-        XCTAssertEqual(config.lightID, "light-uuid")
-        XCTAssertEqual(config.onAirBrightness, 80)
-        XCTAssertEqual(config.hotkey, .default, "旧設定にはデフォルトショートカットを適用する")
+        XCTAssertEqual(config.lightIDs, [])
+        XCTAssertEqual(config.onAirBrightness, 100)
+        XCTAssertEqual(config.hotkey, .default, "hotkey キーなしはデフォルトを適用する")
     }
 
     func testClearedHotkeySurvivesRoundTrip() throws {

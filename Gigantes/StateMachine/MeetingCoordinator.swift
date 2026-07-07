@@ -7,7 +7,7 @@ import os
 /// この actor は Effect の実行(タイマー、スナップショット、ランプ操作)だけを行う。
 actor MeetingCoordinator {
     struct Configuration: Sendable {
-        var lightID: String
+        var lightIDs: [String]
         var onAirColor: CIEXYColor
         var onAirBrightness: Double
     }
@@ -55,7 +55,7 @@ actor MeetingCoordinator {
     /// - カメラ使用中なら会議継続中とみなし、復元せず onAir として再開する
     /// - 未使用なら即座に復元する
     private func start(initiallyActive: Bool) async {
-        if snapshots.load() != nil {
+        if !snapshots.load().isEmpty {
             if initiallyActive {
                 Self.logger.info("Leftover snapshot found while camera is active; resuming onAir")
                 machine = MeetingStateMachine(initialState: .onAir)
@@ -108,13 +108,16 @@ actor MeetingCoordinator {
     }
 
     private func captureSnapshotThenSetOnAir() async {
-        let lightID = configuration.lightID
+        // 既存のスナップショットは上書きしない(復元先を壊さない)
+        var captured = snapshots.load()
+        let alreadyCaptured = Set(captured.map(\.lightID))
 
-        // スナップショットが残っている場合は上書きしない(復元先を壊さない)
-        if snapshots.load() == nil {
-            let captured = await withRetry("capture snapshot") {
+        // 取得できなかったランプはスナップショットに入らず、ON AIR 色にもしない
+        // (復元できなくなるため)
+        for lightID in configuration.lightIDs where !alreadyCaptured.contains(lightID) {
+            _ = await withRetry("capture snapshot for light \(lightID)") {
                 let current = try await self.hue.currentSettings(lightID: lightID)
-                self.snapshots.save(LightSnapshot(
+                captured.append(LightSnapshot(
                     lightID: lightID,
                     isOn: current.isOn ?? true,
                     colorXY: current.color,
@@ -122,38 +125,57 @@ actor MeetingCoordinator {
                     capturedAt: Date()
                 ))
             }
-            guard captured else { return }
         }
+
+        // 色変更より先に必ず永続化する
+        snapshots.save(captured)
 
         let onAir = LightSettings(
             isOn: true,
             color: configuration.onAirColor,
             brightness: configuration.onAirBrightness
         )
-        let applied = await withRetry("set onAir color") {
-            try await self.hue.apply(onAir, to: lightID)
+        let snapshotted = Set(captured.map(\.lightID))
+        var anyApplied = false
+        for lightID in configuration.lightIDs where snapshotted.contains(lightID) {
+            let applied = await withRetry("set onAir color for light \(lightID)") {
+                try await self.hue.apply(onAir, to: lightID)
+            }
+            anyApplied = anyApplied || applied
         }
-        if applied {
+        if anyApplied {
             onPhaseChange(.onAir)
         }
     }
 
     private func restoreSnapshot() async {
-        guard let snapshot = snapshots.load() else {
+        let all = snapshots.load()
+        guard !all.isEmpty else {
             onPhaseChange(.idle)
             return
         }
-        let settings = LightSettings(
-            isOn: snapshot.isOn,
-            color: snapshot.colorXY,
-            brightness: snapshot.brightness
-        )
-        let restored = await withRetry("restore snapshot") {
-            try await self.hue.apply(settings, to: snapshot.lightID)
+
+        // 復元に失敗したランプのスナップショットだけを残し、次回の復元に備える
+        var remaining: [LightSnapshot] = []
+        for snapshot in all {
+            let settings = LightSettings(
+                isOn: snapshot.isOn,
+                color: snapshot.colorXY,
+                brightness: snapshot.brightness
+            )
+            let restored = await withRetry("restore snapshot for light \(snapshot.lightID)") {
+                try await self.hue.apply(settings, to: snapshot.lightID)
+            }
+            if !restored {
+                remaining.append(snapshot)
+            }
         }
-        if restored {
+
+        if remaining.isEmpty {
             snapshots.clear()
             onPhaseChange(.idle)
+        } else {
+            snapshots.save(remaining)
         }
     }
 
