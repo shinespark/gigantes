@@ -5,35 +5,46 @@ struct MenuBarView: View {
     @Environment(\.openSettings) private var openSettings
 
     var body: some View {
-        Text(appState.phase.label)
+        Label(appState.phase.label, systemImage: appState.phase.symbolName)
 
         if case .error = appState.phase {
-            Button("Reconnect") {
+            Button {
                 appState.retry()
+            } label: {
+                Label("Reconnect", systemImage: "arrow.clockwise")
             }
         }
 
         if appState.phase != .unconfigured {
-            Toggle("Now ON AIR", isOn: Binding(
+            Toggle(isOn: Binding(
                 get: { appState.manualOverride },
                 set: { appState.setManualOverride($0) }
-            ))
+            )) {
+                Label("Now ON AIR", systemImage: "record.circle.fill")
+            }
         }
 
         Divider()
 
-        Button(appState.phase == .unconfigured ? "Set Up…" : "Settings…") {
+        Button {
             // LSUIElement のエージェントアプリは明示的に前面化しないと
             // 設定ウィンドウが背面に出てしまう
             NSApp.activate(ignoringOtherApps: true)
             openSettings()
+        } label: {
+            Label(
+                appState.phase == .unconfigured ? "Set Up…" : "Settings…",
+                systemImage: "gearshape"
+            )
         }
         .keyboardShortcut(",")
 
         Divider()
 
-        Button("Quit Huemdal") {
+        Button {
             NSApp.terminate(nil)
+        } label: {
+            Label("Quit Huemdal", systemImage: "power")
         }
         .keyboardShortcut("q")
     }
