@@ -11,10 +11,10 @@ import os
 /// - リスナーブロックの削除には既知の不具合報告(FB13398940)があるため、
 ///   一度登録したリスナーは外さず、デバイス増減は再列挙・再読取で追従する
 final class CameraDetector: ActivityDetector, @unchecked Sendable {
-    private static let logger = Logger(subsystem: "dev.shinespark.gigantes", category: "CameraDetector")
+    private static let logger = Logger(subsystem: "dev.shinespark.huemdal", category: "CameraDetector")
 
     /// 全ミュータブル状態はこの serial queue 上でのみ触る(リスナーブロックも同じ queue で呼ばれる)
-    private let queue = DispatchQueue(label: "dev.shinespark.gigantes.camera-detector")
+    private let queue = DispatchQueue(label: "dev.shinespark.huemdal.camera-detector")
     private var listenedDevices: Set<CMIOObjectID> = []
     private var continuations: [UUID: AsyncStream<Bool>.Continuation] = [:]
     private var lastValue: Bool?

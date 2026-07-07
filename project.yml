@@ -1,4 +1,4 @@
-name: Gigantes
+name: Huemdal
 options:
   bundleIdPrefix: dev.shinespark
   deploymentTarget:
@@ -11,39 +11,39 @@ settings:
     CURRENT_PROJECT_VERSION: 1
     CODE_SIGN_IDENTITY: "-"
 targets:
-  Gigantes:
+  Huemdal:
     type: application
     platform: macOS
     sources:
-      - Gigantes
+      - Huemdal
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: dev.shinespark.gigantes
+        PRODUCT_BUNDLE_IDENTIFIER: dev.shinespark.huemdal
         GENERATE_INFOPLIST_FILE: NO
-        INFOPLIST_FILE: Gigantes/Info.plist
-        CODE_SIGN_ENTITLEMENTS: Gigantes/Gigantes.entitlements
+        INFOPLIST_FILE: Huemdal/Info.plist
+        CODE_SIGN_ENTITLEMENTS: Huemdal/Huemdal.entitlements
         ENABLE_HARDENED_RUNTIME: YES
-  GigantesTests:
+  HuemdalTests:
     type: bundle.unit-test
     platform: macOS
     sources:
-      - GigantesTests
+      - HuemdalTests
     dependencies:
-      - target: Gigantes
+      - target: Huemdal
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: dev.shinespark.gigantes-tests
+        PRODUCT_BUNDLE_IDENTIFIER: dev.shinespark.huemdal-tests
         GENERATE_INFOPLIST_FILE: YES
-        TEST_HOST: $(BUILT_PRODUCTS_DIR)/Gigantes.app/Contents/MacOS/Gigantes
+        TEST_HOST: $(BUILT_PRODUCTS_DIR)/Huemdal.app/Contents/MacOS/Huemdal
         BUNDLE_LOADER: $(TEST_HOST)
 schemes:
-  Gigantes:
+  Huemdal:
     build:
       targets:
-        Gigantes: all
+        Huemdal: all
     run:
       config: Debug
     test:
       config: Debug
       targets:
-        - GigantesTests
+        - HuemdalTests
