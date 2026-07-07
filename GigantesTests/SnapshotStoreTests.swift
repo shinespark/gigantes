@@ -18,31 +18,40 @@ final class SnapshotStoreTests: XCTestCase {
 
     func testSaveLoadRoundTrip() {
         let store = UserDefaultsSnapshotStore(defaults: defaults)
-        let snapshot = LightSnapshot(
-            lightID: "light-uuid",
-            isOn: true,
-            colorXY: CIEXYColor(x: 0.4, y: 0.35),
-            brightness: 42.5,
-            capturedAt: Date(timeIntervalSince1970: 1_700_000_000)
-        )
+        let snapshots = [
+            LightSnapshot(
+                lightID: "light-1",
+                isOn: true,
+                colorXY: CIEXYColor(x: 0.4, y: 0.35),
+                brightness: 42.5,
+                capturedAt: Date(timeIntervalSince1970: 1_700_000_000)
+            ),
+            LightSnapshot(
+                lightID: "light-2",
+                isOn: false,
+                colorXY: nil,
+                brightness: nil,
+                capturedAt: Date(timeIntervalSince1970: 1_700_000_001)
+            ),
+        ]
 
-        store.save(snapshot)
+        store.save(snapshots)
 
-        XCTAssertEqual(store.load(), snapshot)
+        XCTAssertEqual(store.load(), snapshots)
     }
 
-    func testLoadReturnsNilWhenEmpty() {
-        XCTAssertNil(UserDefaultsSnapshotStore(defaults: defaults).load())
+    func testLoadReturnsEmptyWhenNothingSaved() {
+        XCTAssertEqual(UserDefaultsSnapshotStore(defaults: defaults).load(), [])
     }
 
-    func testClearRemovesSnapshot() {
+    func testClearRemovesSnapshots() {
         let store = UserDefaultsSnapshotStore(defaults: defaults)
-        store.save(LightSnapshot(
+        store.save([LightSnapshot(
             lightID: "light-uuid", isOn: false, colorXY: nil, brightness: nil, capturedAt: Date()
-        ))
+        )])
 
         store.clear()
 
-        XCTAssertNil(store.load())
+        XCTAssertEqual(store.load(), [])
     }
 }

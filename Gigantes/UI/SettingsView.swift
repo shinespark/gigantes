@@ -32,7 +32,7 @@ private struct SetupProgressSection: View {
     var body: some View {
         Section("Setup") {
             stepRow(1, "Pair with your Hue Bridge", done: appState.hueClient != nil)
-            stepRow(2, "Choose the ON AIR light", done: appState.config.lightID != nil)
+            stepRow(2, "Choose the ON AIR lights", done: !appState.config.lightIDs.isEmpty)
             stepRow(3, "Pick a color and test it", done: false)
         }
     }
@@ -217,15 +217,12 @@ private struct LightSection: View {
     @State private var loadError: String?
 
     var body: some View {
-        Section("Light") {
+        Section("Lights") {
             if appState.hueClient == nil {
                 Text("Pair with a Hue Bridge first.").foregroundStyle(.secondary)
             } else {
-                Picker("ON AIR light", selection: lightSelection) {
-                    Text("None").tag(nil as String?)
-                    ForEach(lights) { light in
-                        Text(light.displayName).tag(light.id as String?)
-                    }
+                ForEach(lights) { light in
+                    Toggle(light.displayName, isOn: selectionBinding(for: light.id))
                 }
                 if let loadError {
                     Text(loadError).foregroundStyle(.red)
@@ -238,12 +235,17 @@ private struct LightSection: View {
         }
     }
 
-    private var lightSelection: Binding<String?> {
+    private func selectionBinding(for lightID: String) -> Binding<Bool> {
         Binding(
-            get: { appState.config.lightID },
-            set: { lightID in
-                appState.config.lightID = lightID
-                appState.config.lightName = lights.first { $0.id == lightID }?.displayName
+            get: { appState.config.lightIDs.contains(lightID) },
+            set: { selected in
+                if selected {
+                    if !appState.config.lightIDs.contains(lightID) {
+                        appState.config.lightIDs.append(lightID)
+                    }
+                } else {
+                    appState.config.lightIDs.removeAll { $0 == lightID }
+                }
             }
         )
     }
@@ -282,8 +284,8 @@ private struct OnAirSection: View {
                 .frame(width: 220)
             }
 
-            Button("Test Light") { Task { await testLight() } }
-                .disabled(testing || appState.config.lightID == nil || appState.hueClient == nil)
+            Button("Test Lights") { Task { await testLights() } }
+                .disabled(testing || appState.config.lightIDs.isEmpty || appState.hueClient == nil)
             if let testResult {
                 Text(testResult).foregroundStyle(.secondary)
             }
@@ -312,21 +314,30 @@ private struct OnAirSection: View {
         )
     }
 
-    /// ON AIR 色を 3 秒間点灯して元の状態に戻す。
-    private func testLight() async {
-        guard let client = appState.hueClient, let lightID = appState.config.lightID else { return }
+    /// 選択中の全ランプを ON AIR 色で 3 秒間点灯して元の状態に戻す。
+    private func testLights() async {
+        guard let client = appState.hueClient else { return }
+        let lightIDs = appState.config.lightIDs
+        guard !lightIDs.isEmpty else { return }
         testing = true
         defer { testing = false }
         do {
-            let before = try await client.currentSettings(lightID: lightID)
+            var before: [String: LightSettings] = [:]
+            for lightID in lightIDs {
+                before[lightID] = try await client.currentSettings(lightID: lightID)
+            }
             let onAir = LightSettings(
                 isOn: true,
                 color: appState.config.onAirColor.xy,
                 brightness: appState.config.onAirBrightness
             )
-            try await client.apply(onAir, to: lightID)
+            for lightID in lightIDs {
+                try await client.apply(onAir, to: lightID)
+            }
             try await Task.sleep(for: .seconds(3))
-            try await client.apply(before, to: lightID)
+            for (lightID, settings) in before {
+                try await client.apply(settings, to: lightID)
+            }
             testResult = String(localized: "Test succeeded.")
         } catch {
             testResult = error.localizedDescription
