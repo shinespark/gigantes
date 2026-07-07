@@ -4,19 +4,19 @@ import os
 /// 検知ストリーム・デバウンスタイマー・Hue API 呼び出しを結線する actor。
 ///
 /// 状態遷移の判断はすべて `MeetingStateMachine` に委譲し、
-/// この actor は Effect の実行(タイマー、スナップショット、ランプ操作)だけを行う。
+/// この actor は Effect の実行(タイマー、スナップショット、ライト操作)だけを行う。
 actor MeetingCoordinator {
     struct Configuration: Sendable {
         enum ColorTarget: Sendable {
             case lights([String])
-            /// Bridge 上の全ランプ。ON AIR のたびに解決するため、後から追加したランプも含む
+            /// Bridge 上の全ライト。ON AIR のたびに解決するため、後から追加したライトも含む
             case allLights
         }
 
         enum OnAirAction: Sendable {
-            /// 対象ランプを単色に変更する
+            /// 対象ライトを単色に変更する
             case color(target: ColorTarget, color: CIEXYColor, brightness: Double)
-            /// Hue シーンを適用する(対象ランプは適用直前にシーンから解決する)
+            /// Hue シーンを適用する(対象ライトは適用直前にシーンから解決する)
             case scene(sceneID: String)
         }
 
@@ -126,7 +126,7 @@ actor MeetingCoordinator {
             case .lights(let ids):
                 lightIDs = ids
             case .allLights:
-                // 解決できなければランプには一切触らない(シーンの対象解決と同じ方針)
+                // 解決できなければライトには一切触らない(シーンの対象解決と同じ方針)
                 var resolvedIDs: [String] = []
                 let resolved = await withRetry("resolve all lights") {
                     resolvedIDs = try await self.hue.listLights().map(\.id)
@@ -150,12 +150,12 @@ actor MeetingCoordinator {
             }
 
         case .scene(let sceneID):
-            // シーンは Hue アプリ側で編集され得るため、対象ランプは毎回解決する
+            // シーンは Hue アプリ側で編集され得るため、対象ライトは毎回解決する
             var lightIDs: [String] = []
             let resolved = await withRetry("resolve lights of scene \(sceneID)") {
                 lightIDs = try await self.hue.sceneLightIDs(sceneID: sceneID)
             }
-            // 解決できなければランプには一切触らない(復元できなくなるため)
+            // 解決できなければライトには一切触らない(復元できなくなるため)
             guard resolved else { return }
 
             let snapshotted = await captureSnapshots(for: lightIDs)
@@ -171,10 +171,10 @@ actor MeetingCoordinator {
         }
     }
 
-    /// 指定ランプの現在状態をスナップショットに追記し、ランプを変更する前に必ず永続化する。
+    /// 指定ライトの現在状態をスナップショットに追記し、ライトを変更する前に必ず永続化する。
     /// 既存のスナップショットは上書きしない(復元先を壊さない)。
-    /// - Returns: スナップショットが存在する(以前から含む)ランプ ID の集合。
-    ///   取得に失敗したランプはここに含まれず、呼び出し側は ON AIR 対象から外す。
+    /// - Returns: スナップショットが存在する(以前から含む)ライト ID の集合。
+    ///   取得に失敗したライトはここに含まれず、呼び出し側は ON AIR 対象から外す。
     private func captureSnapshots(for lightIDs: [String]) async -> Set<String> {
         var captured = snapshots.load()
         let alreadyCaptured = Set(captured.map(\.lightID))
@@ -204,7 +204,7 @@ actor MeetingCoordinator {
             return
         }
 
-        // 復元に失敗したランプのスナップショットだけを残し、次回の復元に備える
+        // 復元に失敗したライトのスナップショットだけを残し、次回の復元に備える
         var remaining: [LightSnapshot] = []
         for snapshot in all {
             let settings = LightSettings(

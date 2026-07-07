@@ -3,7 +3,7 @@ import Observation
 
 /// アプリ全体の表示状態。
 enum AppPhase: Equatable {
-    /// Bridge・ランプが未設定で、監視を開始できない状態
+    /// Bridge・ライトが未設定で、監視を開始できない状態
     case unconfigured
     case idle
     case onAir
@@ -30,9 +30,9 @@ enum AppPhase: Equatable {
 
 /// ON AIR 時の動作モード。
 enum OnAirMode: String, Codable {
-    /// 選択したランプを単色に変更する
+    /// 選択したライトを単色に変更する
     case color
-    /// Hue シーンを適用する(対象ランプはシーンが決める)
+    /// Hue シーンを適用する(対象ライトはシーンが決める)
     case scene
 }
 
@@ -41,7 +41,7 @@ struct AppConfig: Codable, Equatable {
     var bridgeIP: String?
     var bridgeID: String?
     var lightIDs: [String] = []
-    /// true = Bridge 上の全ランプを対象にする(ON AIR のたびに解決するため、後から追加したランプも含む)
+    /// true = Bridge 上の全ライトを対象にする(ON AIR のたびに解決するため、後から追加したライトも含む)
     var allLights = false
     var onAirMode: OnAirMode = .color
     var onAirColor: RGBColor = .red
@@ -171,6 +171,16 @@ final class AppState {
             return nil
         }
         return HueClient(bridgeIP: bridgeIP, bridgeID: bridgeID, applicationKey: key)
+    }
+
+    /// すべての設定を初期状態に戻す。
+    /// Keychain のペアリングキーと未復元スナップショットも削除する。
+    func resetAllSettings() {
+        if let bridgeID = config.bridgeID {
+            secrets.deleteApplicationKey(for: bridgeID)
+        }
+        snapshots.clear()
+        config = AppConfig()
     }
 
     /// エラー時にメニューバーから手動で再接続する。

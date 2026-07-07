@@ -26,6 +26,30 @@
         "ja" : { "stringUnit" : { "state" : "translated", "value" : "ログイン時に起動" } }
       }
     },
+    "Reset All Settings…" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "すべての設定をリセット…" } }
+      }
+    },
+    "Reset all settings?" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "すべての設定をリセットしますか?" } }
+      }
+    },
+    "Reset" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "リセット" } }
+      }
+    },
+    "Bridge pairing, light selection, and all other settings will be deleted, and the app will relaunch. This cannot be undone." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "ブリッジのペアリング、ライトの選択、その他すべての設定が削除され、アプリが再起動します。この操作は取り消せません。" } }
+      }
+    },
     "Hue Bridge" : {
       "extractionState" : "manual",
       "localizations" : {

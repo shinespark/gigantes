@@ -120,7 +120,7 @@ struct HueLightUpdate: Encodable, Equatable {
     init(settings: LightSettings) {
         on = settings.isOn.map(HueLight.On.init(on:))
         dimming = settings.brightness.map(HueLight.Dimming.init(brightness:))
-        // 色温度と xy 色は同時に送信しない(色温度モードのランプは mirek で復元する)
+        // 色温度と xy 色は同時に送信しない(色温度モードのライトは mirek で復元する)
         if let mirek = settings.mirek {
             colorTemperature = MirekValue(mirek: mirek)
             color = nil
@@ -152,7 +152,7 @@ struct HueScene: Decodable, Identifiable, Equatable {
         return name.isEmpty ? id : name
     }
 
-    /// このシーンの recall が変更するランプの ID 一覧。
+    /// このシーンの recall が変更するライトの ID 一覧。
     var targetLightIDs: [String] {
         (actions ?? []).filter { $0.target.rtype == "light" }.map(\.target.rid)
     }
