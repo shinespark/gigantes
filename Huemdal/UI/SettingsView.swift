@@ -5,7 +5,7 @@ struct SettingsView: View {
     @Environment(AppState.self) private var appState
 
     private enum Tab {
-        case general, bridge, lights
+        case general, bridge, lights, reset
     }
 
     @State private var selectedTab = Tab.general
@@ -33,9 +33,15 @@ struct SettingsView: View {
             .formStyle(.grouped)
             .tabItem { Label("Lights", systemImage: "lightbulb") }
             .tag(Tab.lights)
+
+            Form {
+                ResetSection()
+            }
+            .formStyle(.grouped)
+            .tabItem { Label("Reset", systemImage: "arrow.counterclockwise") }
+            .tag(Tab.reset)
         }
-        .frame(width: 480)
-        .frame(minHeight: 360)
+        .frame(width: 480, height: 380)
         .onAppear {
             // 未設定でウィンドウが自動オープンされたときは、次にやるべき
             // ペアリング操作が見えるよう Bridge タブから始める
@@ -104,6 +110,38 @@ private struct GeneralSection: View {
         )
     }
 
+}
+
+// MARK: - すべての設定のリセット
+
+private struct ResetSection: View {
+    @Environment(AppState.self) private var appState
+    @State private var confirming = false
+
+    var body: some View {
+        Section {
+            Button("Reset All Settings…", role: .destructive) {
+                confirming = true
+            }
+            .confirmationDialog(
+                "Reset all settings?",
+                isPresented: $confirming
+            ) {
+                Button("Reset", role: .destructive) { reset() }
+            } message: {
+                Text("Bridge pairing, light selection, and all other settings will be deleted, and the app will relaunch. This cannot be undone.")
+            }
+        }
+    }
+
+    /// 設定・Keychain・ログイン時起動・言語をすべて初期化し、
+    /// 画面上の残留状態(トグルや言語 Picker)ごと再起動でリセットする。
+    private func reset() {
+        appState.resetAllSettings()
+        try? SMAppService.mainApp.unregister()
+        AppLanguage.system.apply()
+        AppLanguage.relaunchApp()
+    }
 }
 
 // MARK: - Bridge の発見とペアリング
@@ -221,7 +259,7 @@ private struct BridgeSection: View {
     }
 }
 
-// MARK: - ON AIR 対象の選択(モード + ランプ or シーン)
+// MARK: - ON AIR 対象の選択(モード + ライト or シーン)
 
 private struct LightSection: View {
     @Environment(AppState.self) private var appState
