@@ -9,12 +9,12 @@ struct SettingsView: View {
             if !isSetUp {
                 SetupProgressSection()
             }
+            GeneralSection()
             BridgeSection()
             if appState.config.onAirMode == .color {
                 LightSection()
             }
             OnAirSection()
-            GeneralSection()
         }
         .formStyle(.grouped)
         .frame(width: 480)
