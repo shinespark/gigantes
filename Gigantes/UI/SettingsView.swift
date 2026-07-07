@@ -37,7 +37,7 @@ private struct SetupProgressSection: View {
             if appState.config.onAirMode == .scene {
                 stepRow(2, "Choose the ON AIR scene", done: appState.config.onAirSceneID != nil)
             } else {
-                stepRow(2, "Choose the ON AIR lights", done: !appState.config.lightIDs.isEmpty)
+                stepRow(2, "Choose the ON AIR lights", done: appState.config.allLights || !appState.config.lightIDs.isEmpty)
             }
             stepRow(3, "Pick a color and test it", done: false)
         }
@@ -227,18 +227,32 @@ private struct LightSection: View {
             if appState.hueClient == nil {
                 Text("Pair with a Hue Bridge first.").foregroundStyle(.secondary)
             } else {
-                ForEach(lights) { light in
-                    Toggle(light.displayName, isOn: selectionBinding(for: light.id))
+                Toggle("All lights", isOn: allLightsBinding)
+                if appState.config.allLights {
+                    Text("Every light on the bridge will be used, including lights added later.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                } else {
+                    ForEach(lights) { light in
+                        Toggle(light.displayName, isOn: selectionBinding(for: light.id))
+                    }
+                    if let loadError {
+                        Text(loadError).foregroundStyle(.red)
+                    }
+                    Button("Reload Lights") { Task { await loadLights() } }
                 }
-                if let loadError {
-                    Text(loadError).foregroundStyle(.red)
-                }
-                Button("Reload Lights") { Task { await loadLights() } }
             }
         }
         .task(id: appState.config.bridgeID) {
             await loadLights()
         }
+    }
+
+    private var allLightsBinding: Binding<Bool> {
+        Binding(
+            get: { appState.config.allLights },
+            set: { appState.config.allLights = $0 }
+        )
     }
 
     private func selectionBinding(for lightID: String) -> Binding<Bool> {
@@ -331,7 +345,7 @@ private struct OnAirSection: View {
 
     private var testTargetSelected: Bool {
         switch appState.config.onAirMode {
-        case .color: !appState.config.lightIDs.isEmpty
+        case .color: appState.config.allLights || !appState.config.lightIDs.isEmpty
         case .scene: appState.config.onAirSceneID != nil
         }
     }
@@ -414,7 +428,9 @@ private struct OnAirSection: View {
             let lightIDs: [String]
             switch appState.config.onAirMode {
             case .color:
-                lightIDs = appState.config.lightIDs
+                lightIDs = appState.config.allLights
+                    ? try await client.listLights().map(\.id)
+                    : appState.config.lightIDs
             case .scene:
                 guard let sceneID = appState.config.onAirSceneID else { return }
                 lightIDs = try await client.sceneLightIDs(sceneID: sceneID)

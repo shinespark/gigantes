@@ -11,6 +11,7 @@ struct LightSettings: Equatable, Sendable {
 
 /// Hue ランプ操作の抽象化。実装は CLIP v2 の `HueClient`。
 protocol HueControlling: Sendable {
+    func listLights() async throws -> [HueLight]
     func currentSettings(lightID: String) async throws -> LightSettings
     func apply(_ settings: LightSettings, to lightID: String) async throws
     /// シーンの recall が変更するランプの ID 一覧(適用直前に毎回取得する)

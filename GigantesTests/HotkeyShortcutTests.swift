@@ -102,6 +102,7 @@ final class AppConfigCodableTests: XCTestCase {
         config.onAirSceneID = "scene-uuid"
         config.onAirSceneName = "Red Alert – Office"
         config.lightIDs = ["light-1"]
+        config.allLights = true
 
         let decoded = try JSONDecoder().decode(
             AppConfig.self,
@@ -116,9 +117,12 @@ final class AppConfigCodableTests: XCTestCase {
         config.bridgeIP = "192.0.2.1"
         config.bridgeID = "0123456789abcdef"
 
-        // color モード: lightIDs が必要
+        // color モード: lightIDs か allLights が必要
         config.onAirMode = .color
         XCTAssertFalse(config.isComplete)
+        config.allLights = true
+        XCTAssertTrue(config.isComplete)
+        config.allLights = false
         config.lightIDs = ["light-1"]
         XCTAssertTrue(config.isComplete)
 

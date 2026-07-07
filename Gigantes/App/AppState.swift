@@ -41,6 +41,8 @@ struct AppConfig: Codable, Equatable {
     var bridgeIP: String?
     var bridgeID: String?
     var lightIDs: [String] = []
+    /// true = Bridge 上の全ランプを対象にする(ON AIR のたびに解決するため、後から追加したランプも含む)
+    var allLights = false
     var onAirMode: OnAirMode = .color
     var onAirColor: RGBColor = .red
     var onAirBrightness: Double = 100
@@ -53,7 +55,7 @@ struct AppConfig: Codable, Equatable {
     var isComplete: Bool {
         guard bridgeIP != nil, bridgeID != nil else { return false }
         switch onAirMode {
-        case .color: return !lightIDs.isEmpty
+        case .color: return allLights || !lightIDs.isEmpty
         case .scene: return onAirSceneID != nil
         }
     }
@@ -66,7 +68,7 @@ struct AppConfig: Codable, Equatable {
     // - hotkey は「キーなし(旧設定)= デフォルト適用」と「null(明示的な解除)= nil」を
     //   区別する必要があるため、encode 時に nil を null として明示的に書く
     private enum CodingKeys: String, CodingKey {
-        case bridgeIP, bridgeID, lightIDs, onAirMode, onAirColor, onAirBrightness
+        case bridgeIP, bridgeID, lightIDs, allLights, onAirMode, onAirColor, onAirBrightness
         case onAirSceneID, onAirSceneName, hotkey
     }
 
@@ -75,6 +77,7 @@ struct AppConfig: Codable, Equatable {
         bridgeIP = try container.decodeIfPresent(String.self, forKey: .bridgeIP)
         bridgeID = try container.decodeIfPresent(String.self, forKey: .bridgeID)
         lightIDs = try container.decodeIfPresent([String].self, forKey: .lightIDs) ?? []
+        allLights = try container.decodeIfPresent(Bool.self, forKey: .allLights) ?? false
         onAirMode = try container.decodeIfPresent(OnAirMode.self, forKey: .onAirMode) ?? .color
         onAirColor = try container.decodeIfPresent(RGBColor.self, forKey: .onAirColor) ?? .red
         onAirBrightness = try container.decodeIfPresent(Double.self, forKey: .onAirBrightness) ?? 100
@@ -92,6 +95,7 @@ struct AppConfig: Codable, Equatable {
         try container.encodeIfPresent(bridgeIP, forKey: .bridgeIP)
         try container.encodeIfPresent(bridgeID, forKey: .bridgeID)
         try container.encode(lightIDs, forKey: .lightIDs)
+        try container.encode(allLights, forKey: .allLights)
         try container.encode(onAirMode, forKey: .onAirMode)
         try container.encode(onAirColor, forKey: .onAirColor)
         try container.encode(onAirBrightness, forKey: .onAirBrightness)
@@ -217,12 +221,12 @@ final class AppState {
         let onAirAction: MeetingCoordinator.Configuration.OnAirAction
         switch config.onAirMode {
         case .color:
-            guard !config.lightIDs.isEmpty else {
+            guard config.allLights || !config.lightIDs.isEmpty else {
                 phase = .unconfigured
                 return
             }
             onAirAction = .color(
-                lightIDs: config.lightIDs,
+                target: config.allLights ? .allLights : .lights(config.lightIDs),
                 color: config.onAirColor.xy,
                 brightness: config.onAirBrightness
             )

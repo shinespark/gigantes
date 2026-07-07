@@ -7,9 +7,15 @@ import os
 /// この actor は Effect の実行(タイマー、スナップショット、ランプ操作)だけを行う。
 actor MeetingCoordinator {
     struct Configuration: Sendable {
+        enum ColorTarget: Sendable {
+            case lights([String])
+            /// Bridge 上の全ランプ。ON AIR のたびに解決するため、後から追加したランプも含む
+            case allLights
+        }
+
         enum OnAirAction: Sendable {
-            /// 指定ランプを単色に変更する
-            case color(lightIDs: [String], color: CIEXYColor, brightness: Double)
+            /// 対象ランプを単色に変更する
+            case color(target: ColorTarget, color: CIEXYColor, brightness: Double)
             /// Hue シーンを適用する(対象ランプは適用直前にシーンから解決する)
             case scene(sceneID: String)
         }
@@ -114,7 +120,21 @@ actor MeetingCoordinator {
 
     private func captureSnapshotThenSetOnAir() async {
         switch configuration.onAirAction {
-        case .color(let lightIDs, let color, let brightness):
+        case .color(let target, let color, let brightness):
+            let lightIDs: [String]
+            switch target {
+            case .lights(let ids):
+                lightIDs = ids
+            case .allLights:
+                // 解決できなければランプには一切触らない(シーンの対象解決と同じ方針)
+                var resolvedIDs: [String] = []
+                let resolved = await withRetry("resolve all lights") {
+                    resolvedIDs = try await self.hue.listLights().map(\.id)
+                }
+                guard resolved else { return }
+                lightIDs = resolvedIDs
+            }
+
             let snapshotted = await captureSnapshots(for: lightIDs)
 
             let onAir = LightSettings(isOn: true, color: color, brightness: brightness)
