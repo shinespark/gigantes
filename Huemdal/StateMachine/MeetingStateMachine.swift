@@ -24,9 +24,9 @@ struct MeetingStateMachine {
         case scheduleDebounce(token: Int, duration: Duration)
         /// 進行中のデバウンスタイマーを取り消す
         case cancelDebounce
-        /// ランプの現在状態をスナップショット保存してから ON AIR 色に変更する
+        /// ライトの現在状態をスナップショット保存してから ON AIR 色に変更する
         case captureSnapshotThenSetOnAir
-        /// スナップショットをランプへ書き戻し、成功したら破棄する
+        /// スナップショットをライトへ書き戻し、成功したら破棄する
         case restoreSnapshot
     }
 

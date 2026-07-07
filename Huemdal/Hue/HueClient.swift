@@ -76,7 +76,7 @@ struct HueClient: HueControlling {
         guard let light = lights.first else {
             throw HueAPIError(message: "Light \(lightID) not found")
         }
-        // 色温度モードのランプは mirek で捕捉する(xy だと近似色になり、復元でモードも変わってしまう)
+        // 色温度モードのライトは mirek で捕捉する(xy だと近似色になり、復元でモードも変わってしまう)
         let mirekValid = light.colorTemperature?.mirekValid ?? false
         return LightSettings(
             isOn: light.on?.on,

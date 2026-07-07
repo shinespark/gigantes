@@ -1,6 +1,6 @@
 import Foundation
 
-/// 会議開始前のランプ状態。会議終了時にこの状態へ復元する。
+/// 会議開始前のライト状態。会議終了時にこの状態へ復元する。
 /// `colorXY` と `mirek`(色温度)は排他で、どちらか一方のみ値を持つ。
 struct LightSnapshot: Codable, Equatable {
     let lightID: String
@@ -11,7 +11,7 @@ struct LightSnapshot: Codable, Equatable {
     let capturedAt: Date
 }
 
-/// スナップショットの永続化(対象ランプごとに 1 件)。
+/// スナップショットの永続化(対象ライトごとに 1 件)。
 ///
 /// クラッシュ・再起動後に「復元し損ねたスナップショット」を検出できるよう
 /// UserDefaults に保存する(秘密情報は含まない)。
