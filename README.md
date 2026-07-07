@@ -1,6 +1,6 @@
-# huemdal
+# Huemdal
 
-Turn a Philips Hue lamp into an **ON AIR sign**. huemdal is a macOS menu bar app that watches your camera's in-use state and changes a Hue lamp's color while you are in an online meeting, restoring the lamp's previous state when the meeting ends — so your family knows not to walk in.
+Turn a Philips Hue lamp into an **ON AIR sign**. Huemdal is a macOS menu bar app that watches your camera's in-use state and changes a Hue lamp's color while you are in an online meeting, restoring the lamp's previous state when the meeting ends — so your family knows not to walk in.
 
 ## Features
 
@@ -23,7 +23,7 @@ Download the latest `Huemdal-<version>.zip` from [Releases](https://github.com/s
 
 ## Setup
 
-1. Launch huemdal — it appears in the menu bar
+1. Launch Huemdal — it appears in the menu bar
 2. Open **Set Up…** from the menu
 3. Search for your Hue Bridge and press the link button on the bridge when prompted
 4. Choose the lamp to use as the ON AIR sign
@@ -33,7 +33,7 @@ On macOS 15 and later, allow **Local Network** access when prompted; the app can
 
 ## Privacy
 
-- huemdal **never accesses camera video or microphone audio**. It only reads the system flag that says "some process is using this camera" (CoreMediaIO's `DeviceIsRunningSomewhere`), which is also why macOS shows no camera permission prompt.
+- Huemdal **never accesses camera video or microphone audio**. It only reads the system flag that says "some process is using this camera" (CoreMediaIO's `DeviceIsRunningSomewhere`), which is also why macOS shows no camera permission prompt.
 - All communication stays on your local network, directly with your Hue Bridge over TLS (validated against the Signify root CA). Nothing is sent to any cloud service, with one exception: if mDNS discovery fails, the app queries `discovery.meethue.com` once to locate your bridge.
 - The Hue application key is stored in the macOS Keychain.
 
