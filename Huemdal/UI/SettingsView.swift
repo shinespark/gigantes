@@ -11,14 +11,12 @@ struct SettingsView: View {
             }
             GeneralSection()
             BridgeSection()
-            if appState.config.onAirMode == .color {
-                LightSection()
-            }
+            LightSection()
             OnAirSection()
         }
         .formStyle(.grouped)
         .frame(width: 480)
-        .frame(minHeight: 460)
+        .frame(minHeight: 500)
     }
 
     private var isSetUp: Bool {
@@ -228,37 +226,73 @@ private struct BridgeSection: View {
     }
 }
 
-// MARK: - ランプ選択
+// MARK: - ON AIR 対象の選択(モード + ランプ or シーン)
 
 private struct LightSection: View {
     @Environment(AppState.self) private var appState
     @State private var lights: [HueLight] = []
     @State private var loadError: String?
+    @State private var scenes: [HueScene] = []
+    @State private var groupNames: [String: String] = [:]
+    @State private var sceneLoadError: String?
 
     var body: some View {
         Section("Lights") {
+            Picker("Mode", selection: modeSelection) {
+                Text("Color").tag(OnAirMode.color)
+                Text("Scene").tag(OnAirMode.scene)
+            }
+            .pickerStyle(.segmented)
+
             if appState.hueClient == nil {
                 Text("Pair with a Hue Bridge first.").foregroundStyle(.secondary)
             } else {
-                Toggle("All lights", isOn: allLightsBinding)
-                if appState.config.allLights {
-                    Text("Every light on the bridge will be used, including lights added later.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                } else {
-                    ForEach(lights) { light in
-                        Toggle(light.displayName, isOn: selectionBinding(for: light.id))
+                switch appState.config.onAirMode {
+                case .color:
+                    Toggle("All lights", isOn: allLightsBinding)
+                    if appState.config.allLights {
+                        Text("Every light on the bridge will be used, including lights added later.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    } else {
+                        ForEach(lights) { light in
+                            Toggle(light.displayName, isOn: selectionBinding(for: light.id))
+                        }
+                        if let loadError {
+                            Text(loadError).foregroundStyle(.red)
+                        }
+                        Button("Reload Lights") { Task { await loadLights() } }
                     }
-                    if let loadError {
-                        Text(loadError).foregroundStyle(.red)
+
+                case .scene:
+                    Picker("Scene", selection: sceneSelection) {
+                        Text("None").tag(nil as String?)
+                        ForEach(scenes) { scene in
+                            Text(label(for: scene)).tag(scene.id as String?)
+                        }
                     }
-                    Button("Reload Lights") { Task { await loadLights() } }
+                    if let sceneLoadError {
+                        Text(sceneLoadError).foregroundStyle(.red)
+                    }
+                    if isSavedSceneMissing {
+                        Text("The selected scene was not found on the bridge. It may have been deleted.")
+                            .foregroundStyle(.orange)
+                    }
+                    Button("Reload Scenes") { Task { await loadScenes() } }
                 }
             }
         }
         .task(id: appState.config.bridgeID) {
             await loadLights()
+            await loadScenes()
         }
+    }
+
+    private var modeSelection: Binding<OnAirMode> {
+        Binding(
+            get: { appState.config.onAirMode },
+            set: { appState.config.onAirMode = $0 }
+        )
     }
 
     private var allLightsBinding: Binding<Bool> {
@@ -293,75 +327,6 @@ private struct LightSection: View {
             loadError = error.localizedDescription
         }
     }
-}
-
-// MARK: - ON AIR 時の色・輝度
-
-private struct OnAirSection: View {
-    @Environment(AppState.self) private var appState
-    @State private var scenes: [HueScene] = []
-    @State private var groupNames: [String: String] = [:]
-    @State private var sceneLoadError: String?
-    @State private var testResult: String?
-    @State private var testing = false
-
-    var body: some View {
-        Section("ON AIR") {
-            Picker("Mode", selection: modeSelection) {
-                Text("Color").tag(OnAirMode.color)
-                Text("Scene").tag(OnAirMode.scene)
-            }
-            .pickerStyle(.segmented)
-
-            switch appState.config.onAirMode {
-            case .color:
-                ColorPicker("Color", selection: colorSelection, supportsOpacity: false)
-
-                LabeledContent("Brightness") {
-                    Slider(value: brightnessSelection, in: 1...100) {
-                        EmptyView()
-                    } minimumValueLabel: {
-                        Image(systemName: "sun.min")
-                    } maximumValueLabel: {
-                        Image(systemName: "sun.max")
-                    }
-                    .frame(width: 220)
-                }
-
-            case .scene:
-                Picker("Scene", selection: sceneSelection) {
-                    Text("None").tag(nil as String?)
-                    ForEach(scenes) { scene in
-                        Text(label(for: scene)).tag(scene.id as String?)
-                    }
-                }
-                if let sceneLoadError {
-                    Text(sceneLoadError).foregroundStyle(.red)
-                }
-                if isSavedSceneMissing {
-                    Text("The selected scene was not found on the bridge. It may have been deleted.")
-                        .foregroundStyle(.orange)
-                }
-                Button("Reload Scenes") { Task { await loadScenes() } }
-            }
-
-            Button("Test") { Task { await runTest() } }
-                .disabled(testing || appState.hueClient == nil || !testTargetSelected)
-            if let testResult {
-                Text(testResult).foregroundStyle(.secondary)
-            }
-        }
-        .task(id: appState.config.bridgeID) {
-            await loadScenes()
-        }
-    }
-
-    private var testTargetSelected: Bool {
-        switch appState.config.onAirMode {
-        case .color: appState.config.allLights || !appState.config.lightIDs.isEmpty
-        case .scene: appState.config.onAirSceneID != nil
-        }
-    }
 
     private var isSavedSceneMissing: Bool {
         guard let sceneID = appState.config.onAirSceneID, !scenes.isEmpty else { return false }
@@ -373,13 +338,6 @@ private struct OnAirSection: View {
             return "\(scene.displayName) – \(groupName)"
         }
         return scene.displayName
-    }
-
-    private var modeSelection: Binding<OnAirMode> {
-        Binding(
-            get: { appState.config.onAirMode },
-            set: { appState.config.onAirMode = $0 }
-        )
     }
 
     private var sceneSelection: Binding<String?> {
@@ -407,6 +365,46 @@ private struct OnAirSection: View {
             sceneLoadError = nil
         } catch {
             sceneLoadError = error.localizedDescription
+        }
+    }
+}
+
+// MARK: - ON AIR 時の色・輝度
+
+private struct OnAirSection: View {
+    @Environment(AppState.self) private var appState
+    @State private var testResult: String?
+    @State private var testing = false
+
+    var body: some View {
+        Section("ON AIR") {
+            if appState.config.onAirMode == .color {
+                ColorPicker("Color", selection: colorSelection, supportsOpacity: false)
+
+                LabeledContent("Brightness") {
+                    Slider(value: brightnessSelection, in: 1...100) {
+                        EmptyView()
+                    } minimumValueLabel: {
+                        Image(systemName: "sun.min")
+                    } maximumValueLabel: {
+                        Image(systemName: "sun.max")
+                    }
+                    .frame(width: 220)
+                }
+            }
+
+            Button("Test") { Task { await runTest() } }
+                .disabled(testing || appState.hueClient == nil || !testTargetSelected)
+            if let testResult {
+                Text(testResult).foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    private var testTargetSelected: Bool {
+        switch appState.config.onAirMode {
+        case .color: appState.config.allLights || !appState.config.lightIDs.isEmpty
+        case .scene: appState.config.onAirSceneID != nil
         }
     }
 
