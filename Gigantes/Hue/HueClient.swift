@@ -76,11 +76,45 @@ struct HueClient: HueControlling {
         guard let light = lights.first else {
             throw HueAPIError(message: "Light \(lightID) not found")
         }
+        // 色温度モードのランプは mirek で捕捉する(xy だと近似色になり、復元でモードも変わってしまう)
+        let mirekValid = light.colorTemperature?.mirekValid ?? false
         return LightSettings(
             isOn: light.on?.on,
-            color: light.color?.xy,
-            brightness: light.dimming?.brightness
+            color: mirekValid ? nil : light.color?.xy,
+            brightness: light.dimming?.brightness,
+            mirek: mirekValid ? light.colorTemperature?.mirek : nil
         )
+    }
+
+    // MARK: - シーン
+
+    func listScenes() async throws -> [HueScene] {
+        try await get([HueScene].self, path: "resource/scene")
+    }
+
+    /// room と zone をまとめて返す(シーンの所属グループ名の表示用)。
+    func listGroups() async throws -> [HueGroup] {
+        let rooms = try await get([HueGroup].self, path: "resource/room")
+        let zones = try await get([HueGroup].self, path: "resource/zone")
+        return rooms + zones
+    }
+
+    func sceneLightIDs(sceneID: String) async throws -> [String] {
+        let scenes = try await get([HueScene].self, path: "resource/scene/\(sceneID)")
+        guard let scene = scenes.first else {
+            throw HueAPIError(message: "Scene \(sceneID) not found")
+        }
+        return scene.targetLightIDs
+    }
+
+    func recallScene(sceneID: String) async throws {
+        var request = try clipRequest(path: "resource/scene/\(sceneID)")
+        request.httpMethod = "PUT"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONEncoder().encode(HueSceneRecall.active)
+
+        let (data, response) = try await session.data(for: request)
+        try Self.checkErrors(data: data, response: response)
     }
 
     func apply(_ settings: LightSettings, to lightID: String) async throws {

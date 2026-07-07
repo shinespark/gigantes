@@ -131,6 +131,144 @@ final class HueClientTests: XCTestCase {
         XCTAssertEqual(settings.color, CIEXYColor(x: 0.4, y: 0.35))
     }
 
+    func testCurrentSettingsCapturesMirekWhenValid() async throws {
+        StubURLProtocol.handler = { _ in
+            (200, Data("""
+            {"errors": [], "data": [{
+                "id": "light-uuid",
+                "on": {"on": true},
+                "dimming": {"brightness": 60},
+                "color": {"xy": {"x": 0.45, "y": 0.41}},
+                "color_temperature": {"mirek": 366, "mirek_valid": true}
+            }]}
+            """.utf8))
+        }
+
+        let settings = try await makeClient().currentSettings(lightID: "light-uuid")
+
+        XCTAssertEqual(settings.mirek, 366)
+        XCTAssertNil(settings.color, "色温度モードでは xy ではなく mirek で捕捉する")
+    }
+
+    func testCurrentSettingsIgnoresMirekWhenInvalid() async throws {
+        StubURLProtocol.handler = { _ in
+            (200, Data("""
+            {"errors": [], "data": [{
+                "id": "light-uuid",
+                "on": {"on": true},
+                "color": {"xy": {"x": 0.45, "y": 0.41}},
+                "color_temperature": {"mirek": null, "mirek_valid": false}
+            }]}
+            """.utf8))
+        }
+
+        let settings = try await makeClient().currentSettings(lightID: "light-uuid")
+
+        XCTAssertNil(settings.mirek)
+        XCTAssertEqual(settings.color, CIEXYColor(x: 0.45, y: 0.41))
+    }
+
+    func testApplyEncodesColorTemperatureAndOmitsColor() async throws {
+        nonisolated(unsafe) var captured: URLRequest?
+        StubURLProtocol.handler = { request in
+            captured = request
+            return (200, Data(#"{"errors": [], "data": []}"#.utf8))
+        }
+
+        // color と mirek の両方が入っていても mirek が優先され、color は送信されない
+        let settings = LightSettings(
+            isOn: true,
+            color: CIEXYColor(x: 0.4, y: 0.35),
+            brightness: 60,
+            mirek: 366
+        )
+        try await makeClient().apply(settings, to: "light-uuid")
+
+        let body = try XCTUnwrap(captured?.httpBody)
+        let json = try XCTUnwrap(try JSONSerialization.jsonObject(with: body) as? [String: Any])
+        XCTAssertEqual(Set(json.keys), ["on", "dimming", "color_temperature"])
+        XCTAssertEqual((json["color_temperature"] as? [String: Any])?["mirek"] as? Int, 366)
+    }
+
+    // MARK: - シーン
+
+    func testListScenesDecodesSceneResource() async throws {
+        StubURLProtocol.handler = { _ in
+            (200, Data("""
+            {"errors": [], "data": [{
+                "id": "scene-uuid",
+                "metadata": {"name": "Red Alert"},
+                "group": {"rid": "room-uuid", "rtype": "room"},
+                "actions": [
+                    {"target": {"rid": "light-1", "rtype": "light"}, "action": {"on": {"on": true}}},
+                    {"target": {"rid": "light-2", "rtype": "light"}, "action": {"on": {"on": false}}}
+                ]
+            }]}
+            """.utf8))
+        }
+
+        let scenes = try await makeClient().listScenes()
+
+        XCTAssertEqual(scenes.count, 1)
+        XCTAssertEqual(scenes.first?.displayName, "Red Alert")
+        XCTAssertEqual(scenes.first?.group?.rid, "room-uuid")
+        XCTAssertEqual(scenes.first?.targetLightIDs, ["light-1", "light-2"])
+    }
+
+    func testSceneLightIDsReturnsOnlyLightTargets() async throws {
+        nonisolated(unsafe) var captured: URLRequest?
+        StubURLProtocol.handler = { request in
+            captured = request
+            return (200, Data("""
+            {"errors": [], "data": [{
+                "id": "scene-uuid",
+                "actions": [
+                    {"target": {"rid": "light-1", "rtype": "light"}, "action": {}},
+                    {"target": {"rid": "other", "rtype": "device"}, "action": {}}
+                ]
+            }]}
+            """.utf8))
+        }
+
+        let lightIDs = try await makeClient().sceneLightIDs(sceneID: "scene-uuid")
+
+        XCTAssertEqual(lightIDs, ["light-1"])
+        XCTAssertEqual(captured?.url?.absoluteString, "https://192.0.2.1/clip/v2/resource/scene/scene-uuid")
+    }
+
+    func testRecallSceneSendsRecallActive() async throws {
+        nonisolated(unsafe) var captured: URLRequest?
+        StubURLProtocol.handler = { request in
+            captured = request
+            return (200, Data(#"{"errors": [], "data": []}"#.utf8))
+        }
+
+        try await makeClient().recallScene(sceneID: "scene-uuid")
+
+        let request = try XCTUnwrap(captured)
+        XCTAssertEqual(request.httpMethod, "PUT")
+        XCTAssertEqual(request.url?.absoluteString, "https://192.0.2.1/clip/v2/resource/scene/scene-uuid")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "hue-application-key"), "test-key")
+
+        let body = try XCTUnwrap(request.httpBody)
+        let json = try XCTUnwrap(try JSONSerialization.jsonObject(with: body) as? [String: Any])
+        XCTAssertEqual((json["recall"] as? [String: Any])?["action"] as? String, "active")
+        XCTAssertEqual(Set(json.keys), ["recall"])
+    }
+
+    func testRecallSceneThrowsOnErrorEnvelope() async {
+        StubURLProtocol.handler = { _ in
+            (404, Data(#"{"errors": [{"description": "resource not found"}], "data": []}"#.utf8))
+        }
+
+        do {
+            try await makeClient().recallScene(sceneID: "deleted-scene")
+            XCTFail("Expected an error")
+        } catch {
+            XCTAssertEqual((error as? HueAPIError)?.message, "resource not found")
+        }
+    }
+
     // MARK: - ペアリング
 
     func testAttemptPairingReturnsLinkButtonNotPressedForError101() async throws {
