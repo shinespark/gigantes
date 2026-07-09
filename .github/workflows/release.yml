@@ -11,7 +11,7 @@ jobs:
   release:
     runs-on: macos-latest
     env:
-      APP: build/Build/Products/Release/Huemdal.app
+      APP: build/Build/Products/Release/Huemdall.app
       # secrets コンテキストは step の if で参照できないため、job env に判定を持たせる
       HAS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE != '' }}
       HAS_APPLE_ID: ${{ secrets.APPLE_ID != '' }}
@@ -25,7 +25,7 @@ jobs:
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
           xcodegen
-          xcodebuild -project Huemdal.xcodeproj -scheme Huemdal \
+          xcodebuild -project Huemdall.xcodeproj -scheme Huemdall \
             -configuration Release -derivedDataPath build \
             MARKETING_VERSION="$VERSION" build
 
@@ -53,7 +53,7 @@ jobs:
         if: env.HAS_CERTIFICATE == 'true'
         run: |
           codesign --force --options runtime --timestamp \
-            --entitlements Huemdal/Huemdal.entitlements \
+            --entitlements Huemdall/Huemdall.entitlements \
             --sign "Developer ID Application" "$APP"
           codesign --verify --deep --strict "$APP"
 
@@ -77,11 +77,11 @@ jobs:
       - name: Package
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
-          ditto -c -k --keepParent "$APP" "Huemdal-$VERSION.zip"
+          ditto -c -k --keepParent "$APP" "Huemdall-$VERSION.zip"
 
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$GITHUB_REF_NAME" Huemdal-*.zip \
+          gh release create "$GITHUB_REF_NAME" Huemdall-*.zip \
             --title "$GITHUB_REF_NAME" --generate-notes

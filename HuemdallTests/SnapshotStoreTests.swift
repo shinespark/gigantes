@@ -1,9 +1,9 @@
 import XCTest
-@testable import Huemdal
+@testable import Huemdall
 
 final class SnapshotStoreTests: XCTestCase {
     private var defaults: UserDefaults!
-    private let suiteName = "dev.shinespark.huemdal.tests"
+    private let suiteName = "dev.shinespark.huemdall.tests"
 
     override func setUp() {
         super.setUp()

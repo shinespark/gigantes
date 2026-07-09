@@ -1,5 +1,5 @@
 import XCTest
-@testable import Huemdal
+@testable import Huemdall
 
 /// URLSession に差し込んで、リクエストの検査と固定レスポンスの返却を行うスタブ。
 final class StubURLProtocol: URLProtocol {

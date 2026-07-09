@@ -13,7 +13,7 @@ struct KeychainError: Error {
 }
 
 struct KeychainStore: SecretStoring {
-    private static let service = "dev.shinespark.huemdal"
+    private static let service = "dev.shinespark.huemdall"
 
     func applicationKey(for bridgeID: String) -> String? {
         var query = Self.baseQuery(bridgeID: bridgeID)

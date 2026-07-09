@@ -12,7 +12,7 @@ final class HotkeyManager {
         let status: OSStatus
     }
 
-    private static let logger = Logger(subsystem: "dev.shinespark.huemdal", category: "HotkeyManager")
+    private static let logger = Logger(subsystem: "dev.shinespark.huemdall", category: "HotkeyManager")
 
     private var hotKeyRef: EventHotKeyRef?
     private var eventHandlerRef: EventHandlerRef?

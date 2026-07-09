@@ -1,0 +1,13 @@
+{
+  "sourceLanguage" : "en",
+  "version" : "1.0",
+  "strings" : {
+    "NSLocalNetworkUsageDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Huemdall connects to your Philips Hue Bridge on the local network to control your lights." } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "Huemdall はローカルネットワーク上の Philips Hue Bridge に接続してライトを制御します。" } }
+      }
+    }
+  }
+}

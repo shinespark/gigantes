@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="docs/logo.png" width="128" alt="Huemdal logo">
+  <img src="docs/logo.png" width="128" alt="Huemdall logo">
 </p>
 
-<h1 align="center">Huemdal</h1>
+<h1 align="center">Huemdall</h1>
 
 English | [日本語](README.ja.md)
 
@@ -19,11 +19,11 @@ During remote meetings and the like, it lets your family know "please don't come
 
 ## Install
 
-Download the latest `Huemdal-<version>.zip` from [Releases](https://github.com/shinespark/huemdal/releases), unzip it, and move `Huemdal.app` to your Applications folder.
+Download the latest `Huemdall-<version>.zip` from [Releases](https://github.com/shinespark/huemdall/releases), unzip it, and move `Huemdall.app` to your Applications folder.
 
 ## Setup
 
-1. Launch Huemdal — it appears in the menu bar
+1. Launch Huemdall — it appears in the menu bar
 2. Open menu > **Settings…** (**Set Up…** when unconfigured)
 3. In the **Bridge** tab, search for your Hue Bridge and press the link button on the bridge when prompted
 4. In the **Lights** tab, choose your lights
@@ -31,7 +31,7 @@ Download the latest `Huemdal-<version>.zip` from [Releases](https://github.com/s
 
 ## Privacy
 
-- Huemdal **never accesses camera video or microphone audio**.
+- Huemdall **never accesses camera video or microphone audio**.
   - It only reads `DeviceIsRunningSomewhere`, a flag that says **whether the camera is in use** — which is also why macOS shows no camera permission prompt.
 - All communication stays on your local network, directly with your Hue Bridge over TLS.
   - As a rule, nothing is sent to the internet. The one exception: if mDNS discovery fails, the app queries `discovery.meethue.com` once to locate your bridge.

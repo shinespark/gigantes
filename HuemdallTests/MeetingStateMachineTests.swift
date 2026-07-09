@@ -1,5 +1,5 @@
 import XCTest
-@testable import Huemdal
+@testable import Huemdall
 
 final class MeetingStateMachineTests: XCTestCase {
 

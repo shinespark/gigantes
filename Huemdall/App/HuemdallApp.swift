@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct HuemdalApp: App {
+struct HuemdallApp: App {
     @State private var appState = AppState()
 
     var body: some Scene {
