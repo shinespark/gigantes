@@ -82,16 +82,6 @@ final class AppConfigCodableTests: XCTestCase {
         XCTAssertEqual(config.hotkey, .default, "hotkey キーなしはデフォルトを適用する")
     }
 
-    func testConfigWithoutCameraDetectionKeyDefaultsToEnabled() throws {
-        // cameraDetectionEnabled キーを持たない旧バージョンの JSON でも
-        // デフォルト ON として decode できること(既存ユーザーの挙動を維持)
-        let json = Data(#"{"lightIDs":[],"allLights":false}"#.utf8)
-
-        let config = try JSONDecoder().decode(AppConfig.self, from: json)
-
-        XCTAssertTrue(config.cameraDetectionEnabled)
-    }
-
     func testDisabledCameraDetectionSurvivesRoundTrip() throws {
         var config = AppConfig()
         config.cameraDetectionEnabled = false
