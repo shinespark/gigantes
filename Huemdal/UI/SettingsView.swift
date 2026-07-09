@@ -91,6 +91,8 @@ private struct GeneralSection: View {
                 Text(launchAtLoginError).foregroundStyle(.red)
             }
 
+            Toggle("Auto ON AIR when camera is in use", isOn: cameraDetectionBinding)
+
             LabeledContent("Now ON AIR") {
                 ShortcutRecorderView(
                     shortcut: hotkeyBinding,
@@ -107,6 +109,13 @@ private struct GeneralSection: View {
         Binding(
             get: { appState.config.hotkey },
             set: { appState.config.hotkey = $0 }
+        )
+    }
+
+    private var cameraDetectionBinding: Binding<Bool> {
+        Binding(
+            get: { appState.config.cameraDetectionEnabled },
+            set: { appState.config.cameraDetectionEnabled = $0 }
         )
     }
 

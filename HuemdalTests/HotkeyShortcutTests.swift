@@ -82,6 +82,18 @@ final class AppConfigCodableTests: XCTestCase {
         XCTAssertEqual(config.hotkey, .default, "hotkey キーなしはデフォルトを適用する")
     }
 
+    func testDisabledCameraDetectionSurvivesRoundTrip() throws {
+        var config = AppConfig()
+        config.cameraDetectionEnabled = false
+
+        let decoded = try JSONDecoder().decode(
+            AppConfig.self,
+            from: JSONEncoder().encode(config)
+        )
+
+        XCTAssertFalse(decoded.cameraDetectionEnabled)
+    }
+
     func testClearedHotkeySurvivesRoundTrip() throws {
         var config = AppConfig()
         config.hotkey = nil
