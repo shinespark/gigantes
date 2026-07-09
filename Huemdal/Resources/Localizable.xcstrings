@@ -26,6 +26,12 @@
         "ja" : { "stringUnit" : { "state" : "translated", "value" : "ログイン時に起動" } }
       }
     },
+    "Auto ON AIR when camera is in use" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "カメラ使用時に自動で ON AIR" } }
+      }
+    },
     "Reset All Settings…" : {
       "extractionState" : "manual",
       "localizations" : {

@@ -51,6 +51,8 @@ struct AppConfig: Codable, Equatable {
     var onAirSceneName: String?
     /// Now ON AIR のグローバルショートカット。nil = 明示的に解除された状態
     var hotkey: HotkeyShortcut? = .default
+    /// カメラ使用の自動検知で ON AIR を切り替えるか(OFF でも手動 ON AIR は使える)
+    var cameraDetectionEnabled = true
 
     var isComplete: Bool {
         guard bridgeIP != nil, bridgeID != nil else { return false }
@@ -69,7 +71,7 @@ struct AppConfig: Codable, Equatable {
     //   区別する必要があるため、encode 時に nil を null として明示的に書く
     private enum CodingKeys: String, CodingKey {
         case bridgeIP, bridgeID, lightIDs, allLights, onAirMode, onAirColor, onAirBrightness
-        case onAirSceneID, onAirSceneName, hotkey
+        case onAirSceneID, onAirSceneName, hotkey, cameraDetectionEnabled
     }
 
     init(from decoder: Decoder) throws {
@@ -88,6 +90,7 @@ struct AppConfig: Codable, Equatable {
         } else {
             hotkey = .default
         }
+        cameraDetectionEnabled = try container.decodeIfPresent(Bool.self, forKey: .cameraDetectionEnabled) ?? true
     }
 
     func encode(to encoder: Encoder) throws {
@@ -102,6 +105,7 @@ struct AppConfig: Codable, Equatable {
         try container.encodeIfPresent(onAirSceneID, forKey: .onAirSceneID)
         try container.encodeIfPresent(onAirSceneName, forKey: .onAirSceneName)
         try container.encode(hotkey, forKey: .hotkey)
+        try container.encode(cameraDetectionEnabled, forKey: .cameraDetectionEnabled)
     }
 
     private static let defaultsKey = "appConfig"
@@ -253,8 +257,10 @@ final class AppState {
         }
         phase = .idle
 
+        let activityDetector: any ActivityDetector =
+            config.cameraDetectionEnabled ? detector : DisabledActivityDetector()
         let coordinator = MeetingCoordinator(
-            detector: detector,
+            detector: activityDetector,
             hue: hue,
             snapshots: snapshots,
             configuration: .init(onAirAction: onAirAction),
