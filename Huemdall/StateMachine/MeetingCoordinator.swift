@@ -23,7 +23,7 @@ actor MeetingCoordinator {
         var onAirAction: OnAirAction
     }
 
-    private static let logger = Logger(subsystem: "dev.shinespark.huemdal", category: "MeetingCoordinator")
+    private static let logger = Logger(subsystem: "dev.shinespark.huemdall", category: "MeetingCoordinator")
     private static let maxRetryAttempts = 5
 
     private var machine = MeetingStateMachine()

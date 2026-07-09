@@ -44,7 +44,7 @@ struct MenuBarView: View {
         Button {
             NSApp.terminate(nil)
         } label: {
-            Label("Quit Huemdal", systemImage: "power")
+            Label("Quit Huemdall", systemImage: "power")
         }
         .keyboardShortcut("q")
     }

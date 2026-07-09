@@ -266,10 +266,10 @@
         "ja" : { "stringUnit" : { "state" : "translated", "value" : "設定…" } }
       }
     },
-    "Quit Huemdal" : {
+    "Quit Huemdall" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ja" : { "stringUnit" : { "state" : "translated", "value" : "Huemdal を終了" } }
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "Huemdall を終了" } }
       }
     },
     "Type shortcut… (⎋ to cancel)" : {
@@ -314,10 +314,10 @@
         "ja" : { "stringUnit" : { "state" : "translated", "value" : "ショートカットを登録できませんでした。システムで使用中の可能性があります。" } }
       }
     },
-    "Local network access is denied. Allow Huemdal in System Settings > Privacy & Security > Local Network." : {
+    "Local network access is denied. Allow Huemdall in System Settings > Privacy & Security > Local Network." : {
       "extractionState" : "manual",
       "localizations" : {
-        "ja" : { "stringUnit" : { "state" : "translated", "value" : "ローカルネットワークへのアクセスが拒否されています。「システム設定 > プライバシーとセキュリティ > ローカルネットワーク」で Huemdal を許可してください。" } }
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "ローカルネットワークへのアクセスが拒否されています。「システム設定 > プライバシーとセキュリティ > ローカルネットワーク」で Huemdall を許可してください。" } }
       }
     },
     "Hue Bridge unreachable" : {

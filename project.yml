@@ -1,4 +1,4 @@
-name: Huemdal
+name: Huemdall
 options:
   bundleIdPrefix: dev.shinespark
   developmentLanguage: en
@@ -12,40 +12,40 @@ settings:
     CURRENT_PROJECT_VERSION: 1
     CODE_SIGN_IDENTITY: "-"
 targets:
-  Huemdal:
+  Huemdall:
     type: application
     platform: macOS
     sources:
-      - Huemdal
+      - Huemdall
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: dev.shinespark.huemdal
+        PRODUCT_BUNDLE_IDENTIFIER: dev.shinespark.huemdall
         GENERATE_INFOPLIST_FILE: NO
-        INFOPLIST_FILE: Huemdal/Info.plist
+        INFOPLIST_FILE: Huemdall/Info.plist
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
-        CODE_SIGN_ENTITLEMENTS: Huemdal/Huemdal.entitlements
+        CODE_SIGN_ENTITLEMENTS: Huemdall/Huemdall.entitlements
         ENABLE_HARDENED_RUNTIME: YES
-  HuemdalTests:
+  HuemdallTests:
     type: bundle.unit-test
     platform: macOS
     sources:
-      - HuemdalTests
+      - HuemdallTests
     dependencies:
-      - target: Huemdal
+      - target: Huemdall
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: dev.shinespark.huemdal-tests
+        PRODUCT_BUNDLE_IDENTIFIER: dev.shinespark.huemdall-tests
         GENERATE_INFOPLIST_FILE: YES
-        TEST_HOST: $(BUILT_PRODUCTS_DIR)/Huemdal.app/Contents/MacOS/Huemdal
+        TEST_HOST: $(BUILT_PRODUCTS_DIR)/Huemdall.app/Contents/MacOS/Huemdall
         BUNDLE_LOADER: $(TEST_HOST)
 schemes:
-  Huemdal:
+  Huemdall:
     build:
       targets:
-        Huemdal: all
+        Huemdall: all
     run:
       config: Debug
     test:
       config: Debug
       targets:
-        - HuemdalTests
+        - HuemdallTests

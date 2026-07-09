@@ -1,13 +1,13 @@
 import XCTest
-@testable import Huemdal
+@testable import Huemdall
 
 final class LocalizationTests: XCTestCase {
 
-    /// リポジトリの Huemdal/ ソースディレクトリ(#filePath から辿る)。
+    /// リポジトリの Huemdall/ ソースディレクトリ(#filePath から辿る)。
     private static let sourceRoot = URL(fileURLWithPath: #filePath)
-        .deletingLastPathComponent()  // HuemdalTests/
+        .deletingLastPathComponent()  // HuemdallTests/
         .deletingLastPathComponent()  // リポジトリルート
-        .appendingPathComponent("Huemdal")
+        .appendingPathComponent("Huemdall")
 
     // MARK: - 翻訳の解決
 

@@ -15,7 +15,7 @@ enum DiscoveryError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .localNetworkDenied:
-            String(localized: "Local network access is denied. Allow Huemdal in System Settings > Privacy & Security > Local Network.")
+            String(localized: "Local network access is denied. Allow Huemdall in System Settings > Privacy & Security > Local Network.")
         }
     }
 }

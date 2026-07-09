@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="docs/logo.png" width="128" alt="Huemdal logo">
+  <img src="docs/logo.png" width="128" alt="Huemdall logo">
 </p>
 
-<h1 align="center">Huemdal</h1>
+<h1 align="center">Huemdall</h1>
 
 [English](README.md) | 日本語
 
@@ -19,11 +19,11 @@
 
 ## インストール
 
-[Releases](https://github.com/shinespark/huemdal/releases) から最新の `Huemdal-<version>.zip` をダウンロードして展開し、`Huemdal.app` をアプリケーションフォルダに移動してください。
+[Releases](https://github.com/shinespark/huemdall/releases) から最新の `Huemdall-<version>.zip` をダウンロードして展開し、`Huemdall.app` をアプリケーションフォルダに移動してください。
 
 ## セットアップ
 
-1. Huemdal を起動すると、メニューバーに表示されます
+1. Huemdall を起動すると、メニューバーに表示されます
 2. メニュー > 設定…(未設定時は セットアップ…)を開きます
 3. Bridge タブで Hue Bridge を検索し、案内に従ってブリッジ本体のリンクボタンを押します
 4. Lights タブで ライトを選びます
