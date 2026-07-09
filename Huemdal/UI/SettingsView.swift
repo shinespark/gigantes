@@ -278,10 +278,14 @@ private struct LightSection: View {
             .pickerStyle(.segmented)
 
             if appState.hueClient == nil {
-                Text("Pair with a Hue Bridge first.").foregroundStyle(.secondary)
+                Text("Pair with a Hue Bridge first.").foregroundStyle(.red)
             } else {
                 switch appState.config.onAirMode {
                 case .color:
+                    if !appState.config.allLights && appState.config.lightIDs.isEmpty {
+                        Text("Setup incomplete: select lights to turn ON AIR.")
+                            .foregroundStyle(.red)
+                    }
                     Toggle("All lights", isOn: allLightsBinding)
                     if appState.config.allLights {
                         Text("Every light on the bridge will be used, including lights added later.")
@@ -298,6 +302,10 @@ private struct LightSection: View {
                     }
 
                 case .scene:
+                    if appState.config.onAirSceneID == nil {
+                        Text("Setup incomplete: select a scene to turn ON AIR.")
+                            .foregroundStyle(.red)
+                    }
                     Picker("Scene", selection: sceneSelection) {
                         Text("None").tag(nil as String?)
                         ForEach(scenes) { scene in

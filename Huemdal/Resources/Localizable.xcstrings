@@ -146,6 +146,18 @@
         "ja" : { "stringUnit" : { "state" : "translated", "value" : "先に Hue Bridge とペアリングしてください。" } }
       }
     },
+    "Setup incomplete: select lights to turn ON AIR." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "セットアップ未完了: ON AIR にするライトを選択してください。" } }
+      }
+    },
+    "Setup incomplete: select a scene to turn ON AIR." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "セットアップ未完了: ON AIR にするシーンを選択してください。" } }
+      }
+    },
     "All lights" : {
       "extractionState" : "manual",
       "localizations" : {
