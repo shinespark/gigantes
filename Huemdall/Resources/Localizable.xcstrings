@@ -164,6 +164,18 @@
         "ja" : { "stringUnit" : { "state" : "translated", "value" : "セットアップ未完了: ON AIR にするシーンを選択してください。" } }
       }
     },
+    "Selected lights will turn ON AIR." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "選択したライトが ON AIR で点灯します。" } }
+      }
+    },
+    "The selected scene will turn ON AIR." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "選択したシーンが ON AIR で適用されます。" } }
+      }
+    },
     "All lights" : {
       "extractionState" : "manual",
       "localizations" : {

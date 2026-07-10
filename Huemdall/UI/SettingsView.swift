@@ -291,10 +291,11 @@ private struct LightSection: View {
             } else {
                 switch appState.config.onAirMode {
                 case .color:
-                    if !appState.config.allLights && appState.config.lightIDs.isEmpty {
-                        Text("Setup incomplete: select lights to turn ON AIR.")
-                            .foregroundStyle(.red)
-                    }
+                    SetupNoticeRow(
+                        isComplete: appState.config.allLights || !appState.config.lightIDs.isEmpty,
+                        incomplete: "Setup incomplete: select lights to turn ON AIR.",
+                        complete: "Selected lights will turn ON AIR."
+                    )
                     Toggle("All lights", isOn: allLightsBinding)
                     if appState.config.allLights {
                         Text("Every light on the bridge will be used, including lights added later.")
@@ -311,10 +312,11 @@ private struct LightSection: View {
                     }
 
                 case .scene:
-                    if appState.config.onAirSceneID == nil {
-                        Text("Setup incomplete: select a scene to turn ON AIR.")
-                            .foregroundStyle(.red)
-                    }
+                    SetupNoticeRow(
+                        isComplete: appState.config.onAirSceneID != nil,
+                        incomplete: "Setup incomplete: select a scene to turn ON AIR.",
+                        complete: "The selected scene will turn ON AIR."
+                    )
                     Picker("Scene", selection: sceneSelection) {
                         Text("None").tag(nil as String?)
                         ForEach(scenes) { scene in
@@ -416,6 +418,31 @@ private struct LightSection: View {
         } catch {
             sceneLoadError = error.localizedDescription
         }
+    }
+}
+
+// MARK: - セットアップ状態の通知行
+
+/// 未完了の警告と完了時の説明を同じ行で差し替える。
+/// 両テキストを ZStack で重ねて高さを常に確保し、行の挿入/削除による
+/// 下の行のガタつきを防ぐ。
+private struct SetupNoticeRow: View {
+    let isComplete: Bool
+    let incomplete: LocalizedStringKey
+    let complete: LocalizedStringKey
+
+    var body: some View {
+        ZStack(alignment: .topLeading) {
+            Text(incomplete)
+                .foregroundStyle(.red)
+                .opacity(isComplete ? 0 : 1)
+                .accessibilityHidden(isComplete)
+            Text(complete)
+                .foregroundStyle(.secondary)
+                .opacity(isComplete ? 1 : 0)
+                .accessibilityHidden(!isComplete)
+        }
+        .animation(.default, value: isComplete)
     }
 }
 
